@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PreSync — Pre-Testing Clinic Scheduling</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0a1628;--navy-mid:#112240;--navy-light:#1a3360;
+  --teal:#00c9a7;--teal-dim:#00a88a;
+  --ice:#e8f4f8;--muted:#8899aa;
+  --danger:#ff6b6b;--warn:#ffb347;--purple:#a78bfa;
+  --border:rgba(0,201,167,0.18);--shadow:0 8px 32px rgba(0,0,0,0.5);
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono','Courier New',Courier,monospace;
+}
+body{font-family:var(--font);background:var(--navy);color:var(--ice);height:100vh;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;letter-spacing:-0.01em;}
+
+/* ── LOGIN ── */
+#loginScreen{position:fixed;inset:0;z-index:1000;background:var(--navy);display:flex;align-items:center;justify-content:center;}
+.lcard{background:var(--navy-mid);border:1px solid var(--border);border-radius:16px;padding:40px;width:380px;box-shadow:var(--shadow);}
+.llogo{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.licon{width:44px;height:44px;background:var(--teal);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.lname{font-size:26px;font-weight:800;color:#fff;}
+.lname span{color:var(--teal);}
+.lsub{font-size:12px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
+.llbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);display:block;margin-bottom:5px;}
+.linp{width:100%;background:var(--navy);border:1.5px solid var(--border);border-radius:8px;padding:11px 13px;font-size:14px;font-family:var(--font);color:var(--ice);outline:none;margin-bottom:14px;}
+.linp:focus{border-color:var(--teal);}
+.linp::placeholder{color:var(--muted);}
+.lbtn{width:100%;background:var(--teal);color:var(--navy);border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;}
+.lbtn:hover{background:var(--teal-dim);}
+.lerr{background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.4);border-radius:6px;padding:9px 12px;font-size:12px;color:var(--danger);margin-bottom:12px;display:none;}
+.lhint{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;font-family:var(--mono);}
+.lfoot{margin-top:24px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+.lfac{color:var(--teal);font-family:var(--mono);}
+
+/* ── APP ── */
+#app{display:none;flex-direction:column;height:100vh;}
+
+/* TOPBAR */
+.topbar{background:var(--navy-mid);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;}
+.tb-logo{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.tb-icon{width:28px;height:28px;background:var(--teal);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.tb-name{font-size:17px;font-weight:800;color:#fff;}
+.tb-name span{color:var(--teal);}
+.tb-dept{font-size:11px;color:var(--muted);background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-family:var(--mono);}
+.tb-stats{display:flex;gap:8px;flex:1;justify-content:center;}
+.stat{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:4px 14px;display:flex;align-items:center;gap:8px;}
+.stat-n{font-size:15px;font-weight:800;font-family:var(--mono);}
+.stat-l{font-size:11px;color:var(--muted);}
+.c-teal{color:var(--teal);}
+.c-warn{color:var(--warn);}
+.c-danger{color:var(--danger);}
+.c-purple{color:var(--purple);}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.notif-btn{position:relative;width:32px;height:32px;background:var(--navy);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;}
+.nbadge{position:absolute;top:-4px;right:-4px;width:15px;height:15px;background:var(--danger);border-radius:50%;font-size:9px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid var(--navy-mid);}
+.tb-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--navy-light));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.tb-user{font-size:12px;color:var(--muted);}
+.tb-out{background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:var(--font);}
+.tb-out:hover{border-color:var(--danger);color:var(--danger);}
+
+/* BODY */
+.app-body{display:flex;flex:1;min-height:0;}
+
+/* NAV */
+.nav{width:52px;background:var(--navy-mid);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:4px;flex-shrink:0;}
+.nbtn{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;border:1px solid transparent;position:relative;}
+.nbtn:hover{background:var(--navy-light);}
+.nbtn.active{background:rgba(0,201,167,0.12);border-color:var(--border);}
+.ntip{position:absolute;left:48px;background:var(--navy-mid);border:1px solid var(--border);border-radius:5px;padding:3px 9px;font-size:11px;white-space:nowrap;color:var(--ice);pointer-events:none;opacity:0;z-index:100;}
+.nbtn:hover .ntip{opacity:1;}
+.ndiv{width:28px;height:1px;background:var(--border);margin:4px 0;}
+.nbot{margin-top:auto;}
+
+/* CONTENT */
+.content{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+.page{display:none;flex:1;min-height:0;overflow:hidden;}
+.page.active{display:flex;}
+
+/* ── SCHEDULE PAGE ── */
+#pgSchedule{flex-direction:row;}
+.sched-wrap{display:flex;flex:1;min-height:0;overflow:hidden;}
+
+/* Patient Panel */
+.pat-panel{width:280px;flex-shrink:0;background:var(--navy-mid);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0;}
+.pp-head{padding:14px 14px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.pp-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:9px;}
+.pp-search{position:relative;}
+.pp-search input{width:100%;background:var(--navy);border:1.5px solid var(--border);border-radius:7px;padding:8px 12px 8px 34px;font-size:13px;font-family:var(--font);color:var(--ice);outline:none;position:relative;z-index:1;}
+.pp-search input:focus{border-color:var(--teal);}
+.pp-search input::placeholder{color:var(--muted);}
+.pp-si{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;z-index:2;display:flex;align-items:center;}
+.pp-count{font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono);}
+.pp-filters{display:flex;gap:4px;margin-top:7px;}
+.ppf{flex:1;background:var(--navy);border:1px solid var(--border);border-radius:5px;padding:5px 3px;font-size:10px;color:var(--muted);cursor:pointer;font-family:var(--font);text-align:center;}
+.ppf.on,.ppf:hover{border-color:var(--teal);color:var(--teal);}
+.pp-list{flex:1;overflow-y:auto;padding:8px;}
+.pp-list::-webkit-scrollbar{width:3px;}
+.pp-list::-webkit-scrollbar-thumb{background:var(--navy-light);border-radius:2px;}
+
+/* Patient Card */
+.pc{background:var(--navy);border:1.5px solid transparent;border-radius:9px;padding:10px 11px;margin-bottom:5px;cursor:pointer;display:flex;align-items:center;gap:9px;}
+.pc:hover{border-color:rgba(0,201,167,0.3);background:#0d1e38;}
+.pc.sel{border-color:var(--teal);background:rgba(0,201,167,0.07);}
+.pc.dupe{border-color:rgba(255,107,107,0.3);}
+.pc-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.pc-info{flex:1;min-width:0;pointer-events:none;}
+.pc-name{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-meta{font-size:10px;color:var(--muted);margin-top:1px;font-family:var(--mono);}
+.pc-ver{font-size:9px;color:var(--teal);margin-top:3px;display:flex;align-items:center;gap:3px;}
+.pcdot{width:5px;height:5px;background:var(--teal);border-radius:50%;display:inline-block;animation:pulse 2s infinite;}
+.pcs{font-size:9px;padding:2px 7px;border-radius:9px;font-weight:700;flex-shrink:0;pointer-events:none;}
+.sv{background:rgba(0,201,167,0.15);color:var(--teal);}
+.sp{background:rgba(255,179,71,0.15);color:var(--warn);}
+.sn{background:rgba(255,107,107,0.15);color:var(--danger);}
+
+/* Right side */
+.sched-right{flex:1;display:grid;grid-template-rows:220px 10px 1fr;min-height:0;overflow:hidden;}
+
+/* Calendar strip */
+.cal-strip{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:10px 16px;overflow:hidden;min-height:0;display:flex;flex-direction:column;}
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0;}
+.cal-mo{font-size:13px;font-weight:700;color:#fff;}
+.cal-nav{display:flex;gap:4px;}
+.cal-nav button{background:var(--navy);border:1px solid var(--border);border-radius:5px;width:22px;height:22px;color:var(--muted);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.cal-nav button:hover{border-color:var(--teal);color:var(--teal);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:auto repeat(6,1fr);gap:2px;flex:1;min-height:0;}
+.cal-dh{text-align:center;font-size:9px;font-weight:700;color:var(--muted);padding-bottom:3px;}
+.cal-d{display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:11px;cursor:pointer;position:relative;color:var(--ice);border:1px solid transparent;min-height:20px;}
+.cal-d:hover{background:var(--navy-light);}
+.cal-d.today{border-color:var(--teal);color:var(--teal);font-weight:700;}
+.cal-d.sel{background:var(--teal);color:var(--navy);font-weight:700;}
+.cal-d.has::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:3px;height:3px;background:var(--warn);border-radius:50%;}
+.cal-d.sel.has::after{background:var(--navy);}
+.cal-d.dim{color:var(--navy-light);cursor:default;}
+.cal-d.dim:hover{background:transparent;}
+
+/* Main form + day schedule */
+.bot-wrap{display:flex;min-height:0;overflow:hidden;height:100%;}
+
+/* Appointment Form */
+.appt-form{flex:1;overflow-y:auto;padding:16px 20px;}
+.appt-form::-webkit-scrollbar{width:4px;}
+.appt-form::-webkit-scrollbar-thumb{background:var(--navy-light);border-radius:2px;}
+.sec-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:16px;}
+.sec-title:first-child{margin-top:0;}
+
+/* Patient Banner */
+.no-pat{background:var(--navy-mid);border:1.5px dashed var(--border);border-radius:9px;padding:20px;text-align:center;color:var(--muted);font-size:13px;margin-bottom:4px;}
+.pat-banner{background:rgba(0,201,167,0.07);border:1px solid var(--border);border-radius:9px;padding:10px 13px;display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.pb-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;}
+.pb-info{flex:1;}
+.pb-name{font-size:14px;font-weight:700;color:#fff;}
+.pb-meta{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px;}
+.pb-tag{background:rgba(0,201,167,0.12);border:1px solid rgba(0,201,167,0.3);border-radius:5px;padding:3px 8px;font-size:9px;font-family:var(--mono);color:var(--teal);flex-shrink:0;}
+
+/* Visit history */
+.hist-box{background:var(--navy);border:1px solid var(--border);border-radius:7px;padding:9px 11px;margin-bottom:12px;}
+.hist-title{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.hist-row{display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;}
+.hist-row:last-child{border-bottom:none;}
+.hist-date{color:var(--muted);font-family:var(--mono);font-size:10px;width:72px;flex-shrink:0;}
+.hist-proc{flex:1;color:var(--ice);}
+.hist-st{font-size:9px;padding:2px 6px;border-radius:7px;font-weight:700;}
+.hc{background:rgba(0,201,167,0.15);color:var(--teal);}
+.hx{background:rgba(255,107,107,0.15);color:var(--danger);}
+
+/* Form grid */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:4px;}
+.fld{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.fld.full{grid-column:1/-1;}
+.flbl{font-size:10px;font-weight:700;letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;}
+.ferr{font-size:10px;color:var(--danger);display:none;margin-top:2px;}
+.fld.err .ferr{display:block;}
+.fld.err input,.fld.err select,.fld.err textarea{border-color:var(--danger) !important;}
+input,select,textarea{background:var(--navy);border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:12px;font-family:var(--font);color:var(--ice);outline:none;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+select option{background:var(--navy-mid);}
+textarea{resize:vertical;min-height:56px;}
+
+/* Labs checkboxes */
+
+
+/* Form actions */
+.form-btns{display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--border);margin-top:8px;}
+.btn{padding:9px 16px;border-radius:7px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;border:1.5px solid transparent;display:flex;align-items:center;gap:6px;justify-content:center;}
+.btn-p{background:var(--teal);color:var(--navy);flex:1;}
+.btn-p:hover{background:var(--teal-dim);}
+.btn-s{background:transparent;border-color:var(--border);color:var(--muted);}
+.btn-s:hover{border-color:var(--teal);color:var(--teal);}
+.btn-d{background:rgba(255,107,107,0.1);border-color:rgba(255,107,107,0.4);color:var(--danger);}
+.btn-w{background:rgba(255,179,71,0.1);border-color:rgba(255,179,71,0.4);color:var(--warn);}
+.btn-loading{opacity:0.6;pointer-events:none;}
+.spin{width:13px;height:13px;border:2px solid rgba(10,22,40,0.3);border-top-color:var(--navy);border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;}
+
+/* Day Schedule */
+.day-col{width:260px;flex-shrink:0;background:var(--navy-mid);border-left:1px solid var(--border);padding:14px 10px;overflow-y:auto;display:flex;flex-direction:column;min-height:0;}
+.day-col::-webkit-scrollbar{width:3px;}
+.day-col::-webkit-scrollbar-thumb{background:var(--navy-light);border-radius:2px;}
+.dc-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.dc-hint{font-size:10px;color:var(--navy-light);margin-bottom:10px;font-style:italic;}
+.ts{display:flex;gap:6px;margin-bottom:7px;}
+.ts-t{font-size:9px;font-family:var(--mono);color:var(--muted);width:34px;flex-shrink:0;padding-top:8px;}
+.sb{flex:1;border-radius:7px;padding:7px 8px;font-size:11px;border-left:3px solid;}
+.sb.open{background:var(--navy);border-color:var(--navy-light);color:var(--muted);font-size:10px;}
+.sb.booked{background:rgba(0,201,167,0.07);border-color:var(--teal);}
+.sb.cancelled{background:rgba(255,107,107,0.05);border-color:rgba(255,107,107,0.3);}
+.sb.rescheduled{background:rgba(255,179,71,0.06);border-color:rgba(255,179,71,0.4);}
+.sb-pat{font-weight:700;color:#fff;font-size:11px;}
+.sb-proc{font-size:10px;color:var(--muted);margin-top:1px;}
+.sb-bay{font-size:9px;color:var(--teal);margin-top:2px;font-family:var(--mono);}
+.sb-sx{font-size:9px;color:var(--purple);margin-top:1px;font-family:var(--mono);}
+.sb-acts{display:flex;gap:3px;margin-top:5px;}
+.sb-btn{font-size:9px;font-weight:700;font-family:var(--font);padding:2px 7px;border-radius:4px;cursor:pointer;border:1px solid;}
+.sb-rs{background:rgba(255,179,71,0.1);border-color:rgba(255,179,71,0.4);color:var(--warn);}
+.sb-cn{background:rgba(255,107,107,0.1);border-color:rgba(255,107,107,0.35);color:var(--danger);}
+.sb-xl{font-size:9px;color:var(--danger);margin-top:2px;font-family:var(--mono);}
+.sb-rl{font-size:9px;color:var(--warn);margin-top:2px;font-family:var(--mono);}
+
+/* OTHER PAGES */
+#pgPatients{padding:20px;overflow-y:auto;flex-direction:column;}
+#pgReports{padding:20px;overflow-y:auto;flex-direction:column;}
+#pgSettings{padding:20px;overflow-y:auto;flex-direction:column;}
+.pg-h{font-size:20px;font-weight:800;color:#fff;margin-bottom:4px;}
+.pg-sub{font-size:12px;color:var(--muted);margin-bottom:18px;}
+.pat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
+.pcf{background:var(--navy-mid);border:1px solid var(--border);border-radius:11px;padding:14px;cursor:pointer;}
+.pcf:hover{border-color:var(--teal);}
+.pcf-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.pcf-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;}
+.pcf-name{font-size:13px;font-weight:700;color:#fff;}
+.pcf-mrn{font-size:10px;color:var(--muted);font-family:var(--mono);}
+.pcf-row{display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.pcf-row:last-child{border-bottom:none;}
+.pcf-k{color:var(--muted);}
+.pcf-v{color:var(--ice);font-weight:600;}
+.pcf-cta{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--teal);text-align:center;}
+.rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.rep-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:11px;padding:18px;}
+.rep-t{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.rep-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.rep-row:last-child{border-bottom:none;}
+.rep-l{font-size:12px;color:var(--ice);}
+.rep-v{font-size:17px;font-weight:800;font-family:var(--mono);}
+.bar-r{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.bar-l{font-size:10px;color:var(--muted);width:110px;flex-shrink:0;}
+.bar-tr{flex:1;height:5px;background:var(--navy);border-radius:3px;overflow:hidden;}
+.bar-f{height:100%;border-radius:3px;}
+.bar-v{font-size:10px;font-family:var(--mono);color:var(--muted);width:24px;text-align:right;}
+.set-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:11px;padding:18px;max-width:560px;margin-bottom:12px;}
+.set-t{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--border);}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.set-row:last-child{border-bottom:none;}
+.set-l{font-size:13px;color:var(--ice);}
+.set-s{font-size:11px;color:var(--muted);margin-top:2px;}
+.tog{width:36px;height:19px;background:var(--navy);border-radius:10px;position:relative;cursor:pointer;border:1px solid var(--border);flex-shrink:0;}
+.tog.on{background:var(--teal);}
+.tog::after{content:'';position:absolute;width:13px;height:13px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left 0.15s;}
+.tog.on::after{left:19px;}
+.prof-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.prof-av{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--navy-light));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;}
+.prof-n{font-size:15px;font-weight:700;color:#fff;}
+.prof-r{font-size:12px;color:var(--muted);margin-top:2px;}
+.kbd{background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:10px;font-family:var(--mono);color:var(--muted);}
+
+/* SYNC BAR */
+.sync-bar{background:var(--navy-mid);border-top:1px solid var(--border);padding:5px 16px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--muted);font-family:var(--mono);flex-shrink:0;}
+.sync-live{display:flex;align-items:center;gap:5px;color:var(--teal);}
+.sync-dot{width:5px;height:5px;background:var(--teal);border-radius:50%;animation:pulse 2s infinite;}
+
+/* MODALS */
+.overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.overlay.hide{display:none;}
+.modal{background:var(--navy-mid);border-radius:16px;padding:30px;width:480px;box-shadow:var(--shadow);}
+.modal.dupe-m{border:1px solid rgba(255,107,107,0.4);}
+.modal.conf-m{border:1px solid var(--border);}
+.modal.cancel-m{border:1px solid rgba(255,107,107,0.5);}
+.modal.rs-m{border:1px solid rgba(255,179,71,0.4);}
+.m-icon{font-size:36px;text-align:center;margin-bottom:12px;}
+.m-title{font-size:18px;font-weight:800;color:#fff;text-align:center;margin-bottom:6px;}
+.m-sub{font-size:12px;color:var(--muted);text-align:center;line-height:1.5;margin-bottom:18px;}
+.m-acts{display:flex;gap:8px;}
+.dupe-list{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
+.dupe-acc{background:var(--navy);border-radius:9px;padding:11px 13px;border:1px solid var(--border);}
+.dupe-acc.bad{border-color:rgba(255,107,107,0.4);background:rgba(255,107,107,0.04);}
+.dupe-acc.good{border-color:rgba(0,201,167,0.4);background:rgba(0,201,167,0.04);}
+.dtag{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.dtr{color:var(--danger);}
+.dtg{color:var(--teal);}
+.dupe-n{font-size:13px;font-weight:700;color:#fff;}
+.dupe-m2{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px;}
+.conf-mrn{background:rgba(0,201,167,0.08);border:1px solid rgba(0,201,167,0.3);border-radius:7px;padding:9px 12px;margin-bottom:14px;font-size:12px;display:flex;align-items:center;gap:7px;}
+.conf-sum{background:var(--navy);border-radius:9px;padding:12px;margin-bottom:14px;border:1px solid var(--border);max-height:300px;overflow-y:auto;}
+.conf-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;}
+.conf-row:last-child{border-bottom:none;}
+.conf-k{color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;}
+.conf-v{color:#fff;font-weight:600;text-align:right;max-width:60%;}
+.cancel-inf{background:var(--navy);border-radius:9px;padding:12px;border:1px solid rgba(255,107,107,0.25);margin-bottom:14px;}
+.cancel-n{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.cancel-m2{font-size:10px;color:var(--muted);font-family:var(--mono);}
+.rs-inf{background:var(--navy);border-radius:9px;padding:11px 13px;border:1px solid rgba(255,179,71,0.3);margin-bottom:14px;}
+.rs-n{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.rs-m2{font-size:10px;color:var(--muted);font-family:var(--mono);}
+.rs-fg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+.rs-f{display:flex;flex-direction:column;gap:4px;}
+.rs-l{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);}
+
+/* NOTIF */
+.notif-panel{position:fixed;top:54px;right:8px;width:300px;background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);z-index:300;}
+.notif-panel.hide{display:none;}
+.np-head{padding:12px 14px 9px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.np-title{font-size:13px;font-weight:700;color:#fff;}
+.np-clear{font-size:11px;color:var(--teal);cursor:pointer;}
+.np-list{max-height:280px;overflow-y:auto;padding:7px;}
+.ni{background:var(--navy);border-radius:7px;padding:9px 11px;margin-bottom:5px;border-left:3px solid;display:flex;gap:9px;}
+.ni.warn{border-color:var(--warn);}
+.ni.danger{border-color:var(--danger);}
+.ni.teal{border-color:var(--teal);}
+.ni.purple{border-color:var(--purple);}
+.ni-msg{font-size:11px;color:var(--ice);line-height:1.4;}
+.ni-time{font-size:9px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
+
+/* ACTIVITY */
+.act-panel{position:fixed;bottom:28px;right:8px;width:280px;background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);z-index:300;}
+.act-panel.hide{display:none;}
+.ap-head{padding:11px 13px 8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.ap-title{font-size:12px;font-weight:700;color:#fff;}
+.ap-close{font-size:16px;color:var(--muted);cursor:pointer;line-height:1;}
+.ap-list{max-height:180px;overflow-y:auto;padding:7px;}
+.ai{display:flex;gap:7px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:10px;}
+.ai:last-child{border-bottom:none;}
+.ai-t{color:var(--muted);font-family:var(--mono);width:40px;flex-shrink:0;}
+.ai-txt{color:var(--ice);line-height:1.4;}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(70px);padding:10px 20px;border-radius:9px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px;box-shadow:var(--shadow);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.success{background:var(--teal);color:var(--navy);}
+.toast.cancelled{background:var(--danger);color:#fff;}
+.toast.rescheduled{background:var(--warn);color:var(--navy);}
+.toast.err{background:var(--danger);color:#fff;}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* SMS / Text reminder styles */
+.sb.sms-pending{background:rgba(96,165,250,0.08);border-color:#60a5fa;}
+.sb.sms-confirmed{background:rgba(0,201,167,0.12);border-color:var(--teal);border-width:2px;}
+.sb.sms-declined{background:rgba(255,107,107,0.1);border-color:var(--danger);border-width:2px;}
+.sms-status{font-size:9px;margin-top:3px;font-family:var(--mono);display:flex;align-items:center;gap:4px;}
+.sms-sent{color:#60a5fa;}
+.sms-confirmed-lbl{color:var(--teal);font-weight:700;}
+.sms-declined-lbl{color:var(--danger);font-weight:700;}
+.sms-btn{font-size:9px;font-weight:700;font-family:var(--font);padding:2px 7px;border-radius:4px;cursor:pointer;border:1px solid;}
+.sms-yes{background:rgba(0,201,167,0.1);border-color:rgba(0,201,167,0.4);color:var(--teal);}
+.sms-yes:hover{background:rgba(0,201,167,0.2);}
+.sms-no{background:rgba(255,107,107,0.1);border-color:rgba(255,107,107,0.35);color:var(--danger);}
+.sms-no:hover{background:rgba(255,107,107,0.2);}
+
+/* SMS preview modal */
+.sms-preview{background:var(--navy);border:1px solid rgba(96,165,250,0.3);border-radius:10px;padding:14px;margin-bottom:16px;}
+.sms-preview-title{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#60a5fa;margin-bottom:8px;}
+.sms-phone{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-bottom:10px;font-family:var(--mono);}
+.sms-bubble{background:#1a3360;border-radius:12px 12px 12px 4px;padding:10px 13px;font-size:12px;color:var(--ice);line-height:1.5;margin-bottom:6px;}
+.sms-reply-hint{font-size:10px;color:var(--muted);font-style:italic;text-align:center;}
+
+/* Right sidebar vertical resize handle */
+.drag-handle-r{
+  width:6px;flex-shrink:0;background:transparent;cursor:col-resize;
+  position:relative;display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s;z-index:10;
+}
+.drag-handle-r:hover{background:rgba(0,201,167,0.15);}
+.drag-handle-r::after{
+  content:'';position:absolute;
+  width:2px;height:40px;
+  background:var(--border);border-radius:2px;
+  transition:background 0.2s,height 0.2s;
+}
+.drag-handle-r:hover::after{background:var(--teal);height:60px;}
+.drag-handle-r.dragging{background:rgba(0,201,167,0.2);}
+.drag-handle-r.dragging::after{background:var(--teal);height:80px;}
+
+/* Horizontal resize handle */
+.drag-handle-h{
+  height:10px;min-height:10px;flex-shrink:0;background:transparent;cursor:row-resize;
+  position:relative;display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s;z-index:20;width:100%;
+}
+.drag-handle-h:hover{background:rgba(0,201,167,0.15);}
+.drag-handle-h::after{
+  content:'';position:absolute;
+  height:2px;width:60px;
+  background:var(--border);border-radius:2px;
+  transition:background 0.2s,width 0.2s;
+}
+.drag-handle-h:hover::after{background:var(--teal);width:100px;}
+.drag-handle-h.dragging{background:rgba(0,201,167,0.25);}
+.drag-handle-h.dragging::after{background:var(--teal);width:120px;}
+
+
+
+/* Resizable panel */
+.drag-handle{
+  width:6px;background:transparent;cursor:col-resize;
+  position:relative;display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s;z-index:10;min-height:60px;
+}
+.drag-handle:hover{background:rgba(0,201,167,0.15);}
+.drag-handle::after{
+  content:'';position:absolute;
+  width:2px;height:40px;
+  background:var(--border);border-radius:2px;
+  transition:background 0.2s,height 0.2s;
+}
+.drag-handle:hover::after{background:var(--teal);height:60px;}
+.drag-handle.dragging{background:rgba(0,201,167,0.2);}
+.drag-handle.dragging::after{background:var(--teal);height:80px;}
+
+.pat-panel{position:relative;}
+
+/* Arrived status */
+.sb.arrived{background:rgba(0,201,167,0.15);border-color:var(--teal);border-width:3px;}
+.sb.closed{background:rgba(136,153,170,0.06);border-color:rgba(136,153,170,0.2);color:var(--muted);}
+.sb-arrived-lbl{font-size:9px;color:var(--teal);margin-top:2px;font-family:var(--mono);font-weight:700;}
+.arrive-btn{background:rgba(0,201,167,0.1);border:1px solid rgba(0,201,167,0.4);border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;font-family:var(--font);color:var(--teal);cursor:pointer;}
+.arrive-btn:hover{background:rgba(0,201,167,0.25);}
+
+/* Print confirmation */
+.print-overlay{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.print-overlay.hide{display:none;}
+.print-card{background:#fff;border-radius:12px;padding:32px;width:460px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+.print-header{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid #00c9a7;}
+.print-logo{width:36px;height:36px;background:#0a1628;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.print-title{font-size:18px;font-weight:800;color:#0a1628;}
+.print-title span{color:#00c9a7;}
+.print-subtitle{font-size:11px;color:#8899aa;margin-top:2px;}
+.print-section{margin-bottom:14px;}
+.print-section-title{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8899aa;margin-bottom:6px;}
+.print-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:12px;}
+.print-row:last-child{border-bottom:none;}
+.print-key{color:#666;font-weight:600;}
+.print-val{color:#0a1628;font-weight:700;text-align:right;}
+.print-footer{margin-top:20px;padding-top:14px;border-top:2px solid #00c9a7;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#8899aa;}
+.print-stamp{background:#0a1628;color:#00c9a7;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;font-family:monospace;}
+.print-actions{display:flex;gap:8px;margin-top:18px;}
+.print-btn{flex:1;padding:9px;border-radius:7px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;border:none;text-align:center;}
+.print-btn-main{background:#00c9a7;color:#0a1628;}
+.print-btn-main:hover{background:#00a88a;}
+.print-btn-sec{background:#f0f0f0;color:#333;}
+.print-btn-sec:hover{background:#e0e0e0;}
+
+/* MRN search tab */
+.search-tabs{display:flex;gap:4px;margin-bottom:8px;}
+.stab{flex:1;background:var(--navy);border:1px solid var(--border);border-radius:5px;padding:5px 4px;font-size:10px;color:var(--muted);cursor:pointer;font-family:var(--font);text-align:center;}
+.stab.on{border-color:var(--teal);color:var(--teal);background:rgba(0,201,167,0.08);}
+
+/* Pending appointment styles */
+.sb.pending{background:rgba(167,139,250,0.08);border-color:var(--purple);}
+.sb-pending-lbl{font-size:9px;color:var(--purple);margin-top:2px;font-family:var(--mono);}
+.not-found-box{background:var(--navy);border:1.5px dashed rgba(167,139,250,0.4);border-radius:9px;padding:16px;text-align:center;margin-top:8px;}
+.not-found-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:5px;}
+.not-found-sub{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;}
+.btn-pending{background:rgba(167,139,250,0.12);border:1.5px solid rgba(167,139,250,0.4);border-radius:7px;padding:8px 14px;font-size:12px;font-weight:700;font-family:var(--font);color:var(--purple);cursor:pointer;width:100%;}
+.btn-pending:hover{background:rgba(167,139,250,0.2);}
+.pending-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.pm-field{display:flex;flex-direction:column;gap:4px;}
+.pm-field.full{grid-column:1/-1;}
+.pm-label{font-size:10px;font-weight:700;letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;}
+.match-btn{background:rgba(0,201,167,0.12);border:1.5px solid rgba(0,201,167,0.4);border-radius:6px;padding:3px 8px;font-size:9px;font-weight:700;font-family:var(--font);color:var(--teal);cursor:pointer;margin-top:4px;}
+.match-btn:hover{background:rgba(0,201,167,0.2);}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="lcard">
+    <div class="llogo"><div class="licon">🔗</div><div class="lname">Pre<span>Sync</span></div></div>
+    <div class="lsub">Pre-Testing Clinic Scheduling<br/>Rio Grande Regional Hospital</div>
+    <div class="lerr" id="lerr">Incorrect username or password.</div>
+    <label class="llbl">Username</label>
+    <input class="linp" type="text" id="luser" placeholder="username"/>
+    <label class="llbl">Password</label>
+    <input class="linp" type="password" id="lpass" placeholder="••••••••"/>
+    <button class="lbtn" id="lbtn">Sign In →</button>
+    <div class="lhint">demo / demo</div>
+    <div class="lfoot"><span class="lfac">RIO GRANDE REGIONAL · PRE-TESTING CLINIC</span><span>v2.1</span></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="tb-logo">
+      <div class="tb-icon">🔗</div>
+      <div class="tb-name">Pre<span>Sync</span></div>
+    </div>
+    <div class="tb-dept">PRE-TESTING CLINIC</div>
+    <div class="tb-stats">
+      <div class="stat"><div class="stat-n c-teal" id="stToday">0</div><div class="stat-l">Scheduled Today</div></div>
+      <div class="stat"><div class="stat-n c-warn" id="stPendingAppt">0</div><div class="stat-l">Pending Appts</div></div>
+      <div class="stat"><div class="stat-n c-danger" id="stCancelled">0</div><div class="stat-l">Cancelled</div></div>
+      <div class="stat"><div class="stat-n c-purple" id="stOpen">0</div><div class="stat-l">Open Slots</div></div>
+    </div>
+    <div class="tb-right">
+      <div class="notif-btn" id="notifBtn">🔔<div class="nbadge" id="nbadge">3</div></div>
+      <div class="tb-av" id="tbAv">DU</div>
+      <div class="tb-user" id="tbUser">Demo User</div>
+      <button class="tb-out" id="logoutBtn">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <div class="nav">
+      <div class="nbtn active" data-page="pgSchedule">📅<div class="ntip">Schedule</div></div>
+      <div class="nbtn" data-page="pgPatients">👥<div class="ntip">Patients</div></div>
+      <div class="nbtn" data-page="pgReports">📊<div class="ntip">Reports</div></div>
+      <div class="ndiv"></div>
+      <div class="nbtn" id="actBtn">📋<div class="ntip">Activity Log</div></div>
+      <div class="ndiv"></div>
+      <div class="nbtn nbot" data-page="pgSettings">⚙️<div class="ntip">Settings</div></div>
+    </div>
+
+    <div class="content">
+
+      <!-- SCHEDULE PAGE -->
+      <div class="page active" id="pgSchedule">
+        <div class="sched-wrap">
+
+          <!-- Patient Search -->
+          <div class="pat-panel">
+            <div class="pp-head">
+              <div class="pp-title">Patient Search</div>
+              <div class="search-tabs">
+                <button class="stab on" id="tabName">By Name / DOB</button>
+                <button class="stab" id="tabMRN">By MRN / HA#</button>
+              </div>
+              <div class="pp-search">
+                <span class="pp-si">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </span>
+                <input type="text" id="searchInp" placeholder="Name or DOB…"/>
+              </div>
+              <div class="pp-search" id="mrnSearchWrap" style="display:none;margin-top:6px;">
+                <span class="pp-si">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </span>
+                <input type="text" id="mrnInp" placeholder="Enter MRN or HA# e.g. RGR-004821…"/>
+              </div>
+              <div class="pp-count" id="ppCount">8 patients</div>
+              <div class="pp-filters">
+                <button class="ppf on" data-filter="all">All</button>
+                <button class="ppf" data-filter="verified">Verified</button>
+                <button class="ppf" data-filter="pending">Pending</button>
+                <button class="ppf" data-filter="new">New</button>
+              </div>
+            </div>
+            <div class="pp-list" id="ppList"></div>
+          </div>
+
+          <!-- Drag Handle -->
+          <div class="drag-handle" id="dragHandle" title="Drag to resize"></div>
+
+          <!-- Right Side -->
+          <div class="sched-right" id="schedRight">
+            <!-- Calendar -->
+            <div class="cal-strip">
+              <div class="cal-hdr">
+                <div class="cal-mo" id="calMo"></div>
+                <div class="cal-nav">
+                  <button id="calPrev">‹</button>
+                  <button id="calNext">›</button>
+                </div>
+              </div>
+              <div class="cal-grid" id="calGrid"></div>
+            </div>
+
+            <!-- Horizontal Resize Handle -->
+            <div class="drag-handle-h" id="dragHandleH" title="Drag to resize"></div>
+
+            <!-- Form + Schedule -->
+            <div class="bot-wrap">
+              <div class="appt-form">
+
+                <!-- Patient Banner -->
+                <div class="sec-title">Patient</div>
+                <div id="patBanner" class="no-pat">← Select a patient from the list to begin scheduling</div>
+
+
+
+                <!-- Pre-Testing Appointment -->
+                <div class="sec-title">📅 Pre-Testing Clinic Appointment</div>
+                <div class="fg">
+                  <div class="fld" id="fApptDate">
+                    <div class="flbl">Appointment Date</div>
+                    <input type="date" id="apptDate"/>
+                    <div class="ferr">Required</div>
+                  </div>
+                  <div class="fld">
+                    <div class="flbl">Appointment Time</div>
+                    <input type="time" id="apptTime" value="08:00"/>
+                  </div>
+                  <div class="fld">
+                    <div class="flbl">Assigned Bay</div>
+                    <select id="bay">
+                      <option value="">— Select Bay —</option>
+                      <option>Bay 1</option>
+                      <option>Bay 2</option>
+                      <option>Bay 3</option>
+                    </select>
+                  </div>
+                  <div class="fld">
+                    <div class="flbl">Appointment Status</div>
+                    <select id="apptStatus">
+                      <option value="Scheduled">Scheduled</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Pending Callback">Pending Callback</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Insurance -->
+                <div class="sec-title">🏥 Insurance Verification</div>
+                <div class="fg">
+                  <div class="fld" id="fIns">
+                    <div class="flbl">Primary Insurance</div>
+                    <input type="text" id="insurance" placeholder="e.g. BlueCross BlueShield"/>
+                    <div class="ferr">Required</div>
+                  </div>
+                  <div class="fld">
+                    <div class="flbl">Policy / Member ID</div>
+                    <input type="text" id="policyId" placeholder="e.g. XYZ123456"/>
+                  </div>
+                  <div class="fld">
+                    <div class="flbl">Auth Number</div>
+                    <input type="text" id="authNum" placeholder="If obtained"/>
+                  </div>
+                  <div class="fld">
+                    <div class="flbl">Auth Status</div>
+                    <select id="authStatus">
+                      <option value="">— Select —</option>
+                      <option>Approved</option>
+                      <option>Pending</option>
+                      <option>Not Required</option>
+                      <option>Denied</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="sec-title">📝 Notes</div>
+                <div class="fld" style="margin-bottom:4px;">
+                  <div class="flbl">Special Instructions / Notes</div>
+                  <textarea id="notes" placeholder="Interpreter needed, wheelchair, transportation, allergies flagged on orders, patient language preference, other…"></textarea>
+                </div>
+
+                <div class="form-btns">
+                  <button class="btn btn-s" id="clearBtn">✕ Clear</button>
+                  <button class="btn btn-p" id="submitBtn">🔗 Push to MEDITECH</button>
+                </div>
+
+              </div>
+
+              <!-- Day Schedule -->
+              <div class="drag-handle-r" id="dragHandleR" title="Drag to resize schedule"></div>
+              <div class="day-col" id="dayCol">
+                <div class="dc-title" id="dcTitle">Today's Schedule</div>
+                <div id="dcDate" style="font-size:10px;color:var(--teal);font-family:var(--mono);margin-bottom:10px;"></div>
+                <div class="dc-hint">Click Reschedule or Cancel on any slot</div>
+                <div id="daySlots"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATIENTS PAGE -->
+      <div class="page" id="pgPatients">
+        <div class="pg-h">Patient Directory</div>
+        <div class="pg-sub">All registered patients — click a card to schedule their pre-testing appointment</div>
+        <div class="pat-grid" id="patGrid"></div>
+      </div>
+
+      <!-- REPORTS PAGE -->
+      <div class="page" id="pgReports">
+        <div class="pg-h">Reports &amp; Analytics</div>
+        <div class="pg-sub">April 2026 — Pre-Testing Clinic · Rio Grande Regional Hospital</div>
+        <div class="rep-grid">
+          <div class="rep-card">
+            <div class="rep-t">📅 Pre-Testing Appointments</div>
+            <div class="rep-row"><div class="rep-l">Total Scheduled</div><div class="rep-v c-teal">142</div></div>
+            <div class="rep-row"><div class="rep-l">Completed</div><div class="rep-v c-teal">118</div></div>
+            <div class="rep-row"><div class="rep-l">Cancelled</div><div class="rep-v c-danger">14</div></div>
+            <div class="rep-row"><div class="rep-l">Rescheduled</div><div class="rep-v c-warn">10</div></div>
+            <div class="rep-row"><div class="rep-l">Walk-Ins (no appt)</div><div class="rep-v" style="color:var(--muted)">8</div></div>
+          </div>
+          <div class="rep-card">
+            <div class="rep-t">⚠️ Duplicate Prevention</div>
+            <div class="rep-row"><div class="rep-l">Duplicates Blocked</div><div class="rep-v c-teal">27</div></div>
+            <div class="rep-row"><div class="rep-l">Accounts Protected</div><div class="rep-v c-teal">27</div></div>
+            <div class="rep-row"><div class="rep-l">Manual Cleanups Needed</div><div class="rep-v c-teal">0</div></div>
+            <div class="rep-row"><div class="rep-l">Avg. Resolution Time</div><div class="rep-v c-purple">0s</div></div>
+          </div>
+          <div class="rep-card">
+            <div class="rep-t">🧪 Pre-Testing Breakdown</div>
+            <div class="bar-r"><div class="bar-l">CBC</div><div class="bar-tr"><div class="bar-f" style="width:88%;background:var(--teal)"></div></div><div class="bar-v">125</div></div>
+            <div class="bar-r"><div class="bar-l">BMP</div><div class="bar-tr"><div class="bar-f" style="width:82%;background:#818cf8"></div></div><div class="bar-v">116</div></div>
+            <div class="bar-r"><div class="bar-l">EKG</div><div class="bar-tr"><div class="bar-f" style="width:70%;background:#f472b6"></div></div><div class="bar-v">99</div></div>
+            <div class="bar-r"><div class="bar-l">PT/INR</div><div class="bar-tr"><div class="bar-f" style="width:45%;background:#fb923c"></div></div><div class="bar-v">64</div></div>
+            <div class="bar-r"><div class="bar-l">Chest X-Ray</div><div class="bar-tr"><div class="bar-f" style="width:30%;background:#60a5fa"></div></div><div class="bar-v">42</div></div>
+            <div class="bar-r"><div class="bar-l">Type &amp; Screen</div><div class="bar-tr"><div class="bar-f" style="width:22%;background:var(--muted)"></div></div><div class="bar-v">31</div></div>
+          </div>
+          <div class="rep-card">
+            <div class="rep-t">🏥 Insurance &amp; Auth</div>
+            <div class="rep-row"><div class="rep-l">Auth Approved</div><div class="rep-v c-teal">98</div></div>
+            <div class="rep-row"><div class="rep-l">Auth Pending</div><div class="rep-v c-warn">24</div></div>
+            <div class="rep-row"><div class="rep-l">Auth Denied</div><div class="rep-v c-danger">6</div></div>
+            <div class="rep-row"><div class="rep-l">Not Required</div><div class="rep-v" style="color:var(--muted)">14</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS PAGE -->
+      <div class="page" id="pgSettings">
+        <div class="pg-h">Settings</div>
+        <div class="pg-sub">Profile, preferences, and system configuration</div>
+        <div class="set-card">
+          <div class="set-t">Profile</div>
+          <div class="prof-row">
+            <div class="prof-av" id="setAv">DU</div>
+            <div><div class="prof-n" id="setName">Demo User</div><div class="prof-r" id="setRole">Scheduler — Pre-Testing Clinic</div></div>
+          </div>
+          <div class="set-row"><div><div class="set-l">Department</div><div class="set-s">Pre-Testing Clinic · Rio Grande Regional Hospital · McAllen, TX</div></div></div>
+          <div class="set-row"><div><div class="set-l">MEDITECH Instance</div><div class="set-s" style="font-family:var(--mono);font-size:10px;">EXPANSE · RGR-PROD-01 · Connected</div></div><div style="color:var(--teal);font-size:11px;">● LIVE</div></div>
+        </div>
+        <div class="set-card">
+          <div class="set-t">Preferences</div>
+          <div class="set-row"><div><div class="set-l">Duplicate Detection</div><div class="set-s">Auto-flag potential duplicates before pushing to MEDITECH</div></div><div class="tog on"></div></div>
+          <div class="set-row"><div><div class="set-l">Require Confirmation Modal</div><div class="set-s">Review appointment details before pushing</div></div><div class="tog on"></div></div>
+          <div class="set-row"><div><div class="set-l">Auto-fill Insurance</div><div class="set-s">Pre-populate insurance from patient record on selection</div></div><div class="tog on"></div></div>
+          <div class="set-row"><div><div class="set-l">Sound Notifications</div><div class="set-s">Play audio on alerts and confirmations</div></div><div class="tog"></div></div>
+        </div>
+        <div class="set-card">
+          <div class="set-t">Keyboard Shortcuts</div>
+          <div class="set-row"><div class="set-l">Close modal</div><div><span class="kbd">Esc</span></div></div>
+          <div class="set-row"><div class="set-l">Confirm action</div><div><span class="kbd">Enter</span></div></div>
+          <div class="set-row"><div class="set-l">Clear form</div><div><span class="kbd">Ctrl</span> + <span class="kbd">R</span></div></div>
+          <div class="set-row"><div class="set-l">Focus search</div><div><span class="kbd">Ctrl</span> + <span class="kbd">F</span></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sync-bar">
+    <div class="sync-live"><div class="sync-dot"></div>MEDITECH EXPANSE — Live Sync · RGR-PROD-01 · Pre-Testing Clinic</div>
+    <div>Last sync: <span id="syncTime">just now</span></div>
+    <div id="syncUser">Scheduler — Rio Grande Regional</div>
+  </div>
+</div>
+
+<!-- NOTIF PANEL -->
+<div class="notif-panel hide" id="notifPanel">
+  <div class="np-head"><div class="np-title">🔔 Notifications</div><div class="np-clear" id="notifClear">Clear all</div></div>
+  <div class="np-list" id="notifList"></div>
+</div>
+
+<!-- ACTIVITY PANEL -->
+<div class="act-panel hide" id="actPanel">
+  <div class="ap-head"><div class="ap-title">📋 Activity Log</div><div class="ap-close" id="actClose">×</div></div>
+  <div class="ap-list" id="actList"></div>
+</div>
+
+<!-- DUPE MODAL -->
+<div class="overlay hide" id="dupeOverlay">
+  <div class="modal dupe-m">
+    <div class="m-icon">⚠️</div>
+    <div class="m-title">Duplicate Account Detected</div>
+    <div class="m-sub">PreSync found an existing MEDITECH account for this patient. The scheduler account will be <strong style="color:var(--danger)">blocked</strong> — appointment links to the verified primary account only.</div>
+    <div class="dupe-list">
+      <div class="dupe-acc bad"><div class="dtag dtr">🚫 Scheduler Account — Blocked</div><div class="dupe-n" id="dn1"></div><div class="dupe-m2" id="dm1"></div></div>
+      <div class="dupe-acc good"><div class="dtag dtg">✅ MEDITECH Primary — Links Here</div><div class="dupe-n" id="dn2"></div><div class="dupe-m2" id="dm2"></div></div>
+    </div>
+    <div class="m-acts">
+      <button class="btn btn-s" style="flex:1" id="dupeCancelBtn">Cancel</button>
+      <button class="btn btn-p" id="dupeConfirmBtn">Confirm &amp; Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="overlay hide" id="confOverlay">
+  <div class="modal conf-m">
+    <div class="m-icon">📋</div>
+    <div class="m-title">Review Appointment</div>
+    <div class="m-sub">Confirm all details before pushing to MEDITECH.</div>
+    <div class="conf-mrn">🔗 Linking to MEDITECH account: <strong id="confMRN" style="color:var(--teal);font-family:var(--mono);margin-left:5px;"></strong></div>
+    <div class="conf-sum" id="confSum"></div>
+    <div class="m-acts">
+      <button class="btn btn-s" style="flex:1" id="confEditBtn">← Edit</button>
+      <button class="btn btn-p" id="confPushBtn">✅ Confirm &amp; Push to MEDITECH</button>
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL MODAL -->
+<div class="overlay hide" id="cancelOverlay">
+  <div class="modal cancel-m">
+    <div class="m-icon">🚫</div>
+    <div class="m-title">Cancel Appointment</div>
+    <div class="m-sub">This will remove the pre-testing appointment and update MEDITECH.</div>
+    <div class="cancel-inf"><div class="cancel-n" id="cancelName"></div><div class="cancel-m2" id="cancelMeta"></div></div>
+    <div class="fld" style="margin-bottom:18px;">
+      <div class="flbl">Reason for Cancellation</div>
+      <select id="cancelReason">
+        <option value="">— Select Reason —</option>
+        <option>Patient Request</option>
+        <option>Patient No Show</option>
+        <option>Surgery Cancelled</option>
+        <option>Surgery Rescheduled</option>
+        <option>Provider Unavailable</option>
+        <option>Insurance / Auth Issue</option>
+        <option>Patient Condition Changed</option>
+        <option>Duplicate Appointment</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="m-acts">
+      <button class="btn btn-s" style="flex:1" id="cancelBackBtn">Go Back</button>
+      <button class="btn btn-d" style="flex:1" id="cancelConfirmBtn">🚫 Confirm Cancellation</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESCHEDULE MODAL -->
+<div class="overlay hide" id="rsOverlay">
+  <div class="modal rs-m">
+    <div class="m-icon">📅</div>
+    <div class="m-title">Reschedule Appointment</div>
+    <div class="m-sub">Pick a new date and time. MEDITECH will be updated and the original slot released.</div>
+    <div class="rs-inf"><div class="rs-n" id="rsName"></div><div class="rs-m2" id="rsMeta"></div></div>
+    <div class="rs-fg">
+      <div class="rs-f"><div class="rs-l">New Date</div><input type="date" id="rsDate"/></div>
+      <div class="rs-f"><div class="rs-l">New Time</div><input type="time" id="rsTime" value="08:00"/></div>
+      <div class="rs-f" style="grid-column:1/-1"><div class="rs-l">Reason for Reschedule</div>
+        <select id="rsReason">
+          <option value="">— Select —</option>
+          <option>Patient Request</option>
+          <option>Surgery Date Changed</option>
+          <option>Provider Schedule Change</option>
+          <option>Facility Availability</option>
+          <option>Insurance / Auth Pending</option>
+          <option>Patient Condition</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div id="slotCheckResult" style="display:none;margin-bottom:14px;"></div>
+    <div class="m-acts">
+      <button class="btn btn-s" style="flex:1" id="rsBackBtn">Go Back</button>
+      <button class="btn btn-w" style="flex:1" id="rsConfirmBtn">📅 Confirm Reschedule</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- SMS PREVIEW MODAL -->
+<div class="overlay hide" id="smsOverlay">
+  <div class="modal" style="border:1px solid rgba(96,165,250,0.4);box-shadow:0 0 40px rgba(96,165,250,0.1);">
+    <div class="m-icon">📱</div>
+    <div class="m-title">Text Reminder Sent</div>
+    <div class="m-sub">The following SMS has been sent to the patient's phone number on file. The patient can reply YES to confirm or NO to cancel.</div>
+    <div class="sms-preview">
+      <div class="sms-preview-title">📲 SMS Message Preview</div>
+      <div class="sms-phone">📞 <span id="smsPhone"></span></div>
+      <div class="sms-bubble" id="smsBubble"></div>
+      <div class="sms-reply-hint">Patient can reply YES to confirm · NO to cancel · STOP to opt out</div>
+    </div>
+    <div style="background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.3);border-radius:7px;padding:10px 13px;margin-bottom:16px;font-size:11px;color:#60a5fa;line-height:1.5;">
+      📋 <strong>What happens next:</strong> When the patient replies, PreSync updates their appointment status automatically and sends you a notification. No manual follow-up needed unless they reply NO.
+    </div>
+    <div class="m-acts">
+      <button class="btn btn-p" style="background:#60a5fa;color:var(--navy);" onclick="$('smsOverlay').classList.add('hide')">Got It ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT CONFIRMATION -->
+<div class="print-overlay hide" id="printOverlay">
+  <div class="print-card">
+    <div class="print-header">
+      <div class="print-logo">🔗</div>
+      <div>
+        <div class="print-title">Pre<span>Sync</span></div>
+        <div class="print-subtitle">Pre-Testing Clinic · Rio Grande Regional Hospital · McAllen, TX</div>
+      </div>
+    </div>
+    <div class="print-section">
+      <div class="print-section-title">Patient Information</div>
+      <div class="print-row"><div class="print-key">Patient Name</div><div class="print-val" id="prPatName"></div></div>
+      <div class="print-row"><div class="print-key">MRN</div><div class="print-val" id="prMRN"></div></div>
+      <div class="print-row"><div class="print-key">HA Number</div><div class="print-val" id="prHA"></div></div>
+      <div class="print-row"><div class="print-key">Date of Birth</div><div class="print-val" id="prDOB"></div></div>
+      <div class="print-row"><div class="print-key">Insurance</div><div class="print-val" id="prIns"></div></div>
+    </div>
+    <div class="print-section">
+      <div class="print-section-title">Pre-Testing Appointment</div>
+      <div class="print-row"><div class="print-key">Appointment Date</div><div class="print-val" id="prDate"></div></div>
+      <div class="print-row"><div class="print-key">Appointment Time</div><div class="print-val" id="prTime"></div></div>
+      <div class="print-row"><div class="print-key">Assigned Bay</div><div class="print-val" id="prBay"></div></div>
+      <div class="print-row"><div class="print-key">Auth Status</div><div class="print-val" id="prAuth"></div></div>
+      <div class="print-row"><div class="print-key">Notes</div><div class="print-val" id="prNotes"></div></div>
+    </div>
+    <div class="print-section">
+      <div class="print-section-title">MEDITECH Confirmation</div>
+      <div class="print-row"><div class="print-key">Status</div><div class="print-val" style="color:#00c9a7;">✅ Linked to MEDITECH</div></div>
+      <div class="print-row"><div class="print-key">Confirmation #</div><div class="print-val" id="prConfNum"></div></div>
+      <div class="print-row"><div class="print-key">Booked By</div><div class="print-val" id="prBookedBy"></div></div>
+      <div class="print-row"><div class="print-key">Timestamp</div><div class="print-val" id="prTimestamp"></div></div>
+    </div>
+    <div style="background:#f8fff8;border:1px solid #c0e8c0;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:10px;color:#446644;line-height:1.5;">
+      🔒 <strong>HIPAA Notice:</strong> This document contains protected health information. PreSync does not store patient data — all information is read from and written to MEDITECH only. Handle this confirmation in accordance with hospital privacy policy.
+    </div>
+    <div class="print-actions">
+      <button class="print-btn print-btn-sec" onclick="document.getElementById('printOverlay').classList.add('hide')">Close</button>
+      <button class="print-btn print-btn-main" onclick="window.print()">🖨️ Print Confirmation</button>
+    </div>
+  </div>
+</div>
+
+<!-- PENDING APPOINTMENT MODAL -->
+<div class="overlay hide" id="pendingOverlay">
+  <div class="modal" style="border:1px solid rgba(167,139,250,0.4);">
+    <div class="m-icon">📋</div>
+    <div class="m-title">Create Pending Appointment</div>
+    <div class="m-sub">Patient not yet in MEDITECH. Collect their information now — once Parallon registers them the appointment will be ready to confirm and push.</div>
+    <div class="pending-modal-grid">
+      <div class="pm-field">
+        <div class="pm-label">Patient First Name</div>
+        <input type="text" id="pmFirst" placeholder="First name"/>
+      </div>
+      <div class="pm-field">
+        <div class="pm-label">Patient Last Name</div>
+        <input type="text" id="pmLast" placeholder="Last name"/>
+      </div>
+      <div class="pm-field">
+        <div class="pm-label">Date of Birth</div>
+        <input type="date" id="pmDOB"/>
+      </div>
+      <div class="pm-field">
+        <div class="pm-label">Phone Number</div>
+        <input type="text" id="pmPhone" placeholder="(956) 555-0000"/>
+      </div>
+      <div class="pm-field full">
+        <div class="pm-label">Primary Insurance</div>
+        <input type="text" id="pmIns" placeholder="e.g. BlueCross BlueShield"/>
+      </div>
+      <div class="pm-field">
+        <div class="pm-label">Preferred Appointment Date</div>
+        <input type="date" id="pmDate"/>
+      </div>
+      <div class="pm-field">
+        <div class="pm-label">Preferred Time</div>
+        <input type="time" id="pmTime" value="08:00"/>
+      </div>
+      <div class="pm-field">
+        <div class="pm-label">Preferred Bay</div>
+        <select id="pmBay">
+          <option value="">— Select —</option>
+          <option>Bay 1</option>
+          <option>Bay 2</option>
+          <option>Bay 3</option>
+        </select>
+      </div>
+      <div class="pm-field full">
+        <div class="pm-label">Notes</div>
+        <input type="text" id="pmNotes" placeholder="Interpreter needed, wheelchair, other…"/>
+      </div>
+    </div>
+    <div class="m-acts">
+      <button class="btn btn-s" style="flex:1" id="pendingCancelBtn">Cancel</button>
+      <button class="btn" style="flex:1;background:rgba(167,139,250,0.12);border-color:rgba(167,139,250,0.4);color:var(--purple);" id="pendingSaveBtn">💾 Save Pending Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- MATCH & CONFIRM MODAL -->
+<div class="overlay hide" id="matchOverlay">
+  <div class="modal" style="border:1px solid rgba(0,201,167,0.4);">
+    <div class="m-icon">🔗</div>
+    <div class="m-title">Match &amp; Confirm Appointment</div>
+    <div class="m-sub">Parallon has registered this patient in MEDITECH. Select their verified account below to link and push the appointment.</div>
+    <div class="dupe-list">
+      <div class="dupe-acc" style="border-color:rgba(167,139,250,0.4);background:rgba(167,139,250,0.04);">
+        <div class="dtag" style="color:var(--purple);">📋 Pending Appointment</div>
+        <div class="dupe-n" id="matchPendingName"></div>
+        <div class="dupe-m2" id="matchPendingMeta"></div>
+      </div>
+      <div class="dupe-acc good">
+        <div class="dtag dtg">✅ MEDITECH Verified Account — Link Here</div>
+        <div class="dupe-n" id="matchVerifiedName"></div>
+        <div class="dupe-m2" id="matchVerifiedMeta"></div>
+      </div>
+    </div>
+    <div class="m-acts">
+      <button class="btn btn-s" style="flex:1" id="matchCancelBtn">Cancel</button>
+      <button class="btn btn-p" id="matchConfirmBtn">✅ Confirm &amp; Push to MEDITECH</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── PANEL RESIZE ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+
+  // ── VERTICAL: Patient panel ────────────────────────────────
+  const handle    = document.getElementById('dragHandle');
+  const panel     = document.querySelector('.pat-panel');
+  const schedWrap = document.querySelector('.sched-wrap');
+  let isDraggingV = false;
+
+  if(handle && panel && schedWrap){
+    handle.addEventListener('mousedown', function(e){
+      e.preventDefault();
+      isDraggingV = true;
+      handle.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', function(e){
+      if(!isDraggingV) return;
+      const wrapRect = schedWrap.getBoundingClientRect();
+      let newWidth = e.clientX - wrapRect.left;
+      newWidth = Math.max(160, Math.min(480, newWidth));
+      panel.style.width = newWidth + 'px';
+      panel.style.flex = 'none';
+    });
+
+    document.addEventListener('mouseup', function(){
+      if(!isDraggingV) return;
+      isDraggingV = false;
+      handle.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    });
+
+    // Touch
+    handle.addEventListener('touchstart', e=>{ isDraggingV=true; handle.classList.add('dragging'); },{passive:true});
+    document.addEventListener('touchmove', function(e){
+      if(!isDraggingV) return;
+      const t = e.touches[0];
+      const wrapRect = schedWrap.getBoundingClientRect();
+      let newWidth = t.clientX - wrapRect.left;
+      newWidth = Math.max(160, Math.min(480, newWidth));
+      panel.style.width = newWidth + 'px';
+      panel.style.flex = 'none';
+    },{passive:true});
+    document.addEventListener('touchend', ()=>{ isDraggingV=false; handle.classList.remove('dragging'); });
+  }
+
+  // ── HORIZONTAL: Calendar height ────────────────────────────
+  const handleH    = document.getElementById('dragHandleH');
+  const calStrip   = document.querySelector('.cal-strip');
+  const schedRight = document.getElementById('schedRight');
+  let isDraggingH  = false;
+
+  if(handleH && calStrip && schedRight){
+    let calH = 220;
+
+    function setCalHeight(h){
+      calH = Math.max(55, Math.min(420, h));
+      schedRight.style.gridTemplateRows = calH + 'px 10px 1fr';
+    }
+
+    handleH.addEventListener('mousedown', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      isDraggingH = true;
+      handleH.classList.add('dragging');
+      document.body.style.cursor = 'row-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', function(e){
+      if(!isDraggingH) return;
+      const rightRect = schedRight.getBoundingClientRect();
+      setCalHeight(e.clientY - rightRect.top);
+    });
+
+    document.addEventListener('mouseup', function(){
+      if(!isDraggingH) return;
+      isDraggingH = false;
+      handleH.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    });
+
+    handleH.addEventListener('touchstart', e=>{ isDraggingH=true; handleH.classList.add('dragging'); },{passive:true});
+    document.addEventListener('touchmove', function(e){
+      if(!isDraggingH) return;
+      const t = e.touches[0];
+      const rightRect = schedRight.getBoundingClientRect();
+      setCalHeight(t.clientY - rightRect.top);
+    },{passive:true});
+    document.addEventListener('touchend', ()=>{ isDraggingH=false; handleH.classList.remove('dragging'); });
+  }
+
+  // ── RIGHT SIDEBAR RESIZE (day schedule width) ──────────────
+  const handleR = document.getElementById('dragHandleR');
+  const dayCol  = document.getElementById('dayCol');
+  let isDraggingR = false;
+
+  if(handleR && dayCol){
+    handleR.addEventListener('mousedown', function(e){
+      e.preventDefault();
+      isDraggingR = true;
+      handleR.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', function(e){
+      if(!isDraggingR) return;
+      const wrapRect = dayCol.parentElement.getBoundingClientRect();
+      let newWidth = wrapRect.right - e.clientX;
+      newWidth = Math.max(200, Math.min(540, newWidth));
+      dayCol.style.width = newWidth + 'px';
+      dayCol.style.flexShrink = '0';
+      dayCol.style.flexGrow = '0';
+    });
+
+    document.addEventListener('mouseup', function(){
+      if(!isDraggingR) return;
+      isDraggingR = false;
+      handleR.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    });
+
+    handleR.addEventListener('touchstart', e=>{ isDraggingR=true; handleR.classList.add('dragging'); },{passive:true});
+    document.addEventListener('touchmove', function(e){
+      if(!isDraggingR) return;
+      const t = e.touches[0];
+      const wrapRect = dayCol.parentElement.getBoundingClientRect();
+      let newWidth = wrapRect.right - t.clientX;
+      newWidth = Math.max(200, Math.min(540, newWidth));
+      dayCol.style.width = newWidth + 'px';
+      dayCol.style.flexShrink = '0';
+      dayCol.style.flexGrow = '0';
+    },{passive:true});
+    document.addEventListener('touchend', ()=>{ isDraggingR=false; handleR.classList.remove('dragging'); });
+  }
+});
+
+const USERS = {
+  demo:    { pass:'demo',     name:'Demo User',    initials:'DU', role:'Scheduler' },
+  mgarcia: { pass:'presync1', name:'Maria Garcia', initials:'MG', role:'Scheduler' },
+  admin:   { pass:'admin',    name:'Admin User',   initials:'AU', role:'Admin' }
+};
+
+const PATIENTS = [
+  { id:1, name:'Maria Elena Garza',   dob:'1968-03-14', mrn:'RGR-004821', ha:'HA-2026-00142', ins:'Medicaid',  phone:'(956) 555-0142', status:'verified', color:'#2dd4bf', initials:'MG', dupe:true,
+    history:[{date:'2026-01-12',proc:'Pre-Testing — Colonoscopy',st:'completed'},{date:'2025-09-04',proc:'Pre-Testing — EGD',st:'completed'}] },
+  { id:2, name:'Jose Luis Ramirez',   dob:'1975-11-02', mrn:'RGR-007634', ha:'HA-2026-00287', ins:'BlueCross', phone:'(956) 555-0287', status:'verified', color:'#818cf8', initials:'JR', dupe:false,
+    history:[{date:'2026-02-20',proc:'Pre-Testing — Cardiac Cath',st:'completed'},{date:'2025-11-15',proc:'Pre-Testing — Knee Scope',st:'completed'}] },
+  { id:3, name:'Patricia Ann Flores', dob:'1952-07-28', mrn:'RGR-002193', ha:'HA-2026-00331', ins:'Medicare',  phone:'(956) 555-0331', status:'pending', pendingReason:'Medicare authorization pending — auth request submitted, awaiting approval from payer.', color:'#fb923c', initials:'PF', dupe:false,
+    history:[{date:'2026-03-07',proc:'Pre-Testing — Cholecystectomy',st:'completed'},{date:'2025-08-19',proc:'Pre-Testing — Hernia',st:'cancelled'}] },
+  { id:4, name:'Carlos Mendoza Jr.',  dob:'1989-04-05', mrn:'RGR-009102', ha:'HA-2026-00478', ins:'UnitedHC', phone:'(956) 555-0478', status:'verified', color:'#34d399', initials:'CM', dupe:true,
+    history:[{date:'2026-01-30',proc:'Pre-Testing — TURP',st:'completed'}] },
+  { id:5, name:'Diana Reyes',         dob:'1994-09-17', mrn:'RGR-011456', ha:'HA-2026-00519', ins:'Aetna',    phone:'(956) 555-0519', status:'new',      color:'#f472b6', initials:'DR', dupe:false, history:[] },
+  { id:6, name:'Roberto Salinas',     dob:'1961-01-30', mrn:'RGR-003387', ha:'HA-2026-00623', ins:'Medicaid', phone:'(956) 555-0623', status:'pending', pendingReason:'Insurance denial on file — Medicaid claim requires re-authorization before appointment can be confirmed.', color:'#60a5fa', initials:'RS', dupe:false,
+    history:[{date:'2025-12-11',proc:'Pre-Testing — Appendectomy',st:'completed'}] },
+  { id:7, name:'Linda Castillo',      dob:'1978-06-21', mrn:'RGR-006540', ha:'HA-2026-00754', ins:'Cigna',    phone:'(956) 555-0754', status:'verified', color:'#a78bfa', initials:'LC', dupe:false,
+    history:[{date:'2026-03-22',proc:'Pre-Testing — Hysterectomy',st:'completed'},{date:'2025-10-08',proc:'Pre-Testing — C-Section',st:'completed'}] },
+  { id:8, name:'Miguel Angel Torres', dob:'1983-12-09', mrn:'RGR-008871', ha:'HA-2026-00891', ins:'BlueCross', phone:'(956) 555-0891', status:'new',     color:'#fbbf24', initials:'MT', dupe:false, history:[] },
+];
+
+const NOTIFS = [
+  { type:'warn',   icon:'⚠️', msg:'Patricia Flores — Auth still Pending · Cholecystectomy pre-testing', time:'8:47 AM' },
+  { type:'danger', icon:'🚫', msg:'Insurance denial — Roberto Salinas · Appendectomy pre-testing',      time:'9:12 AM' },
+  { type:'teal',   icon:'✅', msg:'Pre-testing confirmed for Maria Garza · Surgery date 05/10',          time:'9:30 AM' },
+];
+
+// Generate a fresh set of empty slots for any date
+function makeEmptySlots(dateKey){
+  const times=[
+    '07:30','07:45',
+    '08:00','08:15','08:30','08:45',
+    '09:00','09:15','09:30','09:45',
+    '10:00','10:15','10:30','10:45',
+    '11:00','11:15','11:30','11:45',
+    '12:00','12:15','12:30','12:45',
+    '13:00','13:15','13:30','13:45',
+    '14:00','14:15','14:30','14:45',
+    '15:00','15:15','15:30','15:45',
+    '16:00','16:15'
+  ];
+  return [
+    ...times.map((t,i)=>({ id:`${dateKey}-${i}`, time:t, pat:'', sxType:'', bay:'', status:'open' })),
+    { id:`${dateKey}-closed`, time:'16:30', pat:'', sxType:'', bay:'', status:'closed' }
+  ];
+}
+
+// Schedule database keyed by date string YYYY-MM-DD
+const scheduleDB = {};
+
+// Today's date key
+const todayKey = (()=>{ const t=new Date(); return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; })();
+
+// Pre-populate today with demo appointments
+scheduleDB[todayKey] = makeEmptySlots(todayKey);
+const todaySlots = scheduleDB[todayKey];
+// Add demo booked appointments for today — some with SMS status to show the feature
+const demoAppts = [
+  { time:'07:30', pat:'M. Garza',   sxType:'Colonoscopy',            bay:'Bay 1', smsStatus:'confirmed' },
+  { time:'07:45', pat:'J. Ramirez', sxType:'Cardiac Catheterization',bay:'Bay 2', smsStatus:'confirmed' },
+  { time:'08:00', pat:'P. Flores',  sxType:'Cholecystectomy',        bay:'Bay 3', smsStatus:'sent' },
+  { time:'08:30', pat:'C. Mendoza', sxType:'TURP',                   bay:'Bay 1', smsStatus:'sent' },
+  { time:'09:00', pat:'L. Castillo',sxType:'Hysterectomy',           bay:'Bay 2', smsStatus:null },
+  { time:'09:15', pat:'R. Salinas', sxType:'Appendectomy',           bay:'Bay 3', smsStatus:'declined' },
+  { time:'10:00', pat:'D. Reyes',   sxType:'Knee Arthroscopy',       bay:'Bay 1', smsStatus:null },
+  { time:'10:30', pat:'M. Torres',  sxType:'Hernia Repair',          bay:'Bay 2', smsStatus:null },
+];
+demoAppts.forEach(a=>{
+  const slot = todaySlots.find(s=>s.time===a.time);
+  if(slot){ slot.pat=a.pat; slot.sxType=a.sxType; slot.bay=a.bay; slot.status='active'; slot.smsStatus=a.smsStatus; }
+});
+
+// Pre-populate tomorrow with a few appointments
+const tomorrowDate = new Date(); tomorrowDate.setDate(tomorrowDate.getDate()+1);
+const tomorrowKey = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth()+1).padStart(2,'0')}-${String(tomorrowDate.getDate()).padStart(2,'0')}`;
+scheduleDB[tomorrowKey] = makeEmptySlots(tomorrowKey);
+[{time:'07:30',pat:'M. Garza',sxType:'Follow-up Labs',bay:'Bay 1'},{time:'08:30',pat:'J. Ramirez',sxType:'Pre-Op EKG',bay:'Bay 2'},{time:'10:00',pat:'C. Mendoza',sxType:'Anesthesia Consult',bay:'Bay 3'}]
+.forEach(a=>{ const s=scheduleDB[tomorrowKey].find(x=>x.time===a.time); if(s){s.pat=a.pat;s.sxType=a.sxType;s.bay=a.bay;s.status='active';} });
+
+// Current active date and schedule
+let currentDateKey = todayKey;
+let schedule = scheduleDB[todayKey];
+
+let selPatient=null, curFilter='all', curMonth=new Date(2026,3), selDay=30;
+let apptDays=[2,7,9,14,15,21,23,28,30], dupeOK=false, activeSlot=null;
+
+// Mark calendar dots for today and tomorrow
+(function(){
+  const td=new Date();
+  const tm=new Date(); tm.setDate(tm.getDate()+1);
+  if(!apptDays.includes(td.getDate())) apptDays.push(td.getDate());
+  if(!apptDays.includes(tm.getDate())) apptDays.push(tm.getDate());
+})();
+let actLog=[], notifList=[...NOTIFS], currentUser=null;
+
+function $(id){ return document.getElementById(id); }
+function fmtDOB(d){ const[y,m,dd]=d.split('-'); return `${m}/${dd}/${y}`; }
+function showToast(msg,type='success'){ const t=$('toast'); t.textContent=msg; t.className=`toast ${type} show`; setTimeout(()=>t.classList.remove('show'),3200); }
+function addLog(txt){ const time=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}); actLog.unshift({time,txt}); if(actLog.length>30)actLog.pop(); renderActLog(); }
+function updateStats(){
+  $('stToday').textContent=schedule.filter(s=>s.status==='active').length;
+  $('stCancelled').textContent=schedule.filter(s=>s.status==='cancelled').length;
+  $('stOpen').textContent=schedule.filter(s=>s.status==='open').length;
+  $('stPendingAppt').textContent=schedule.filter(s=>s.status==='pending').length;
+}
+
+// ── LOGIN ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  $('lbtn').addEventListener('click', doLogin);
+  $('lpass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+});
+
+function doLogin(){
+  const u=$('luser').value.trim().toLowerCase();
+  const p=$('lpass').value;
+  if(USERS[u] && USERS[u].pass===p){
+    currentUser=USERS[u];
+    $('lerr').style.display='none';
+    $('loginScreen').style.display='none';
+    $('app').style.display='flex';
+    $('tbAv').textContent=currentUser.initials;
+    $('tbUser').textContent=currentUser.name;
+    $('syncUser').textContent=`${currentUser.name} · ${currentUser.role} — Pre-Testing Clinic`;
+    $('setAv').textContent=currentUser.initials;
+    $('setName').textContent=currentUser.name;
+    $('setRole').textContent=`${currentUser.role} — Pre-Testing Clinic · Rio Grande Regional`;
+    initApp();
+  } else {
+    $('lerr').style.display='block';
+    $('lpass').value='';
+    $('lpass').focus();
+  }
+}
+
+function doLogout(){
+  $('app').style.display='none';
+  $('loginScreen').style.display='flex';
+  $('luser').value=''; $('lpass').value='';
+  currentUser=null; selPatient=null;
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+function initApp(){
+  setApptDate();
+  updateSyncTime();
+  renderPatientList(PATIENTS);
+  renderCalendar();
+  // Initialize sidebar date label
+  switchToDate(todayKey);
+  renderNotifs();
+  renderActLog();
+  renderPatientDirectory();
+  updateStats();
+  setInterval(updateSyncTime, 30000);
+  bindAllEvents();
+}
+
+function setApptDate(){
+  const t=new Date();
+  const d=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  $('apptDate').value=d;
+}
+
+function updateSyncTime(){ $('syncTime').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}); }
+
+// ── DATE SWITCHING ────────────────────────────────────────────
+function switchToDate(dateKey){
+  currentDateKey = dateKey;
+  if(!scheduleDB[dateKey]) scheduleDB[dateKey] = makeEmptySlots(dateKey);
+  schedule = scheduleDB[dateKey];
+  $('apptDate').value = dateKey;
+  // Update date label in sidebar
+  const dcDate = $('dcDate');
+  if(dcDate){
+    const d = new Date(dateKey+'T00:00:00');
+    dcDate.textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  }
+  renderSchedule();
+  updateStats();
+}
+
+// ── TIME UTILS ────────────────────────────────────────────────
+function normalizeTime(t){
+  if(!t) return '';
+  const parts = t.split(':');
+  return String(parseInt(parts[0])).padStart(2,'0') + ':' + String(parts[1]||'00').padStart(2,'0');
+}
+
+function checkSlotAvailability(){
+  const newTime = normalizeTime($('rsTime').value);
+  const newDate = $('rsDate').value || currentDateKey;
+  const result = $('slotCheckResult');
+  if(!newTime || !result) return;
+  // Check the TARGET date's schedule — not today's
+  const targetSched = scheduleDB[newDate] || [];
+  const conflict = targetSched.find(s =>
+    s.id !== activeSlot &&
+    normalizeTime(s.time) === newTime &&
+    (s.status === 'active' || s.status === 'arrived' || s.status === 'rescheduled')
+  );
+  if(conflict){
+    result.innerHTML = `<div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.4);border-radius:7px;padding:10px 13px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:18px;">🚫</span>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--danger);">Time Slot Unavailable</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;"><strong style="color:var(--ice);">${conflict.pat}</strong> is already scheduled at <strong style="color:var(--ice);">${conflict.time}</strong> in ${conflict.bay}. Please select a different time.</div>
+      </div></div>`;
+    result.style.display='block';
+  } else {
+    result.innerHTML = `<div style="background:rgba(0,201,167,0.08);border:1px solid rgba(0,201,167,0.3);border-radius:7px;padding:10px 13px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:18px;">✅</span>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--teal);">Time Slot Available</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">This time is open on ${newDate} — you can proceed with the reschedule.</div>
+      </div></div>`;
+    result.style.display='block';
+  }
+}
+
+// ── BIND EVENTS ────────────────────────────────────────────────
+function bindAllEvents(){
+  // Schedule times are normalized at creation via makeEmptySlots
+  $('logoutBtn').addEventListener('click', doLogout);
+
+  // Nav
+  document.querySelectorAll('[data-page]').forEach(btn => {
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));
+      this.classList.add('active');
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      $(this.getAttribute('data-page')).classList.add('active');
+    });
+  });
+
+  // Activity log
+  $('actBtn').addEventListener('click', ()=>{ $('actPanel').classList.toggle('hide'); $('notifPanel').classList.add('hide'); });
+  $('actClose').addEventListener('click', ()=>$('actPanel').classList.add('hide'));
+
+  // Notifications
+  $('notifBtn').addEventListener('click', e=>{ e.stopPropagation(); $('notifPanel').classList.toggle('hide'); $('actPanel').classList.add('hide'); });
+  $('notifClear').addEventListener('click', ()=>{ notifList=[]; renderNotifs(); $('nbadge').textContent='0'; updateStats(); });
+  document.addEventListener('click', e=>{ if(!e.target.closest('#notifPanel')&&!e.target.closest('#notifBtn')) $('notifPanel').classList.add('hide'); });
+
+  // Patient list clicks
+  $('ppList').addEventListener('click', function(e){
+    const card=e.target.closest('[data-pid]');
+    if(!card) return;
+    selectPatient(parseInt(card.getAttribute('data-pid')));
+  });
+
+  // Patient directory clicks
+  $('patGrid').addEventListener('click', function(e){
+    const card=e.target.closest('[data-pid]');
+    if(!card) return;
+    document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));
+    document.querySelector('[data-page="pgSchedule"]').classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    $('pgSchedule').classList.add('active');
+    selectPatient(parseInt(card.getAttribute('data-pid')));
+    $('patBanner').scrollIntoView({behavior:'smooth'});
+  });
+
+  // Search tabs
+  $('tabName').addEventListener('click', function(){
+    this.classList.add('on'); $('tabMRN').classList.remove('on');
+    $('searchInp').closest('.pp-search').style.display='';
+    $('mrnSearchWrap').style.display='none';
+    $('searchInp').value=''; $('mrnInp').value='';
+    renderPatientList(PATIENTS);
+  });
+  $('tabMRN').addEventListener('click', function(){
+    this.classList.add('on'); $('tabName').classList.remove('on');
+    $('mrnSearchWrap').style.display='';
+    $('searchInp').closest('.pp-search').style.display='none';
+    $('mrnInp').value='';
+    renderPatientList(PATIENTS);
+  });
+
+  // Search by name/DOB
+  $('searchInp').addEventListener('input', function(){
+    const q=this.value.toLowerCase().trim();
+    renderPatientList(q ? PATIENTS.filter(p=>p.name.toLowerCase().includes(q)||p.dob.includes(q)) : PATIENTS);
+  });
+
+  // Search by MRN
+  $('mrnInp').addEventListener('input', function(){
+    const q=this.value.toLowerCase().trim();
+    if(!q){ renderPatientList(PATIENTS); return; }
+    const results=PATIENTS.filter(p=>p.mrn.toLowerCase().includes(q)||(p.ha&&p.ha.toLowerCase().includes(q)));
+    if(!results.length){
+      // Try exact MRN match notification
+      $('ppList').innerHTML=`<div class="not-found-box">
+        <div class="not-found-title">MRN Not Found in MEDITECH</div>
+        <div class="not-found-sub">No account matches MRN / HA# "<strong>${this.value}</strong>".<br/>Verify the MRN or HA number on the doctor's orders and try again.<br/>If patient is new, create a pending appointment.</div>
+        <button class="btn-pending" id="createPendingBtn">+ Create Pending Appointment</button>
+      </div>`;
+      $('ppCount').textContent='0 patients found';
+      const pb=document.getElementById('createPendingBtn');
+      if(pb) pb.addEventListener('click', openPendingModal);
+      return;
+    }
+    renderPatientList(results);
+  });
+
+  // Filter buttons
+  document.querySelectorAll('.ppf').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.ppf').forEach(b=>b.classList.remove('on'));
+      this.classList.add('on');
+      curFilter=this.getAttribute('data-filter');
+      renderPatientList(PATIENTS);
+    });
+  });
+
+  // Calendar nav
+  $('calPrev').addEventListener('click', ()=>{ curMonth=new Date(curMonth.getFullYear(),curMonth.getMonth()-1); selDay=null; $('dcTitle').textContent="Today's Schedule"; renderCalendar(); });
+  $('calNext').addEventListener('click', ()=>{ curMonth=new Date(curMonth.getFullYear(),curMonth.getMonth()+1); selDay=null; $('dcTitle').textContent="Today's Schedule"; renderCalendar(); });
+
+  // Form buttons
+  $('submitBtn').addEventListener('click', initiateSubmit);
+  $('clearBtn').addEventListener('click', clearForm);
+
+  // Pending appointment modal
+  $('pendingCancelBtn').addEventListener('click', ()=>$('pendingOverlay').classList.add('hide'));
+  $('pendingSaveBtn').addEventListener('click', savePendingAppointment);
+
+  // Match & confirm modal
+  $('matchCancelBtn').addEventListener('click', ()=>$('matchOverlay').classList.add('hide'));
+  $('matchConfirmBtn').addEventListener('click', confirmMatch);
+
+  // Dupe modal
+  $('dupeCancelBtn').addEventListener('click', ()=>$('dupeOverlay').classList.add('hide'));
+  $('dupeConfirmBtn').addEventListener('click', ()=>{ dupeOK=true; $('dupeOverlay').classList.add('hide'); showConfirmModal(); });
+
+  // Confirm modal
+  $('confEditBtn').addEventListener('click', ()=>$('confOverlay').classList.add('hide'));
+  $('confPushBtn').addEventListener('click', finalPush);
+
+  // Cancel modal
+  $('cancelBackBtn').addEventListener('click', ()=>$('cancelOverlay').classList.add('hide'));
+  $('cancelConfirmBtn').addEventListener('click', confirmCancel);
+
+  // Reschedule modal
+  $('rsBackBtn').addEventListener('click', ()=>$('rsOverlay').classList.add('hide'));
+  $('rsConfirmBtn').addEventListener('click', confirmReschedule);
+  // Check slot availability live as time changes
+  $('rsTime').addEventListener('change', checkSlotAvailability);
+  $('rsTime').addEventListener('input', checkSlotAvailability);
+
+  // Settings toggles
+  document.querySelectorAll('.tog').forEach(t=>t.addEventListener('click',function(){this.classList.toggle('on');}));
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){ ['dupeOverlay','confOverlay','cancelOverlay','rsOverlay','pendingOverlay','matchOverlay','printOverlay'].forEach(id=>$(id).classList.add('hide')); $('notifPanel').classList.add('hide'); $('actPanel').classList.add('hide'); }
+    if(e.key==='Enter'&&!e.target.matches('textarea')){
+      if(!$('confOverlay').classList.contains('hide')) finalPush();
+      else if(!$('cancelOverlay').classList.contains('hide')) confirmCancel();
+      else if(!$('rsOverlay').classList.contains('hide')) confirmReschedule();
+    }
+    if(e.ctrlKey&&e.key==='r'){e.preventDefault();clearForm();}
+    if(e.ctrlKey&&e.key==='f'){e.preventDefault();$('searchInp').focus();}
+  });
+}
+
+// ── PATIENT LIST ───────────────────────────────────────────────
+function renderPatientList(list){
+  const el=$('ppList');
+  const f=curFilter==='all'?list:list.filter(p=>p.status===curFilter);
+  $('ppCount').textContent=`${f.length} patient${f.length!==1?'s':''} found`;
+  if(!f.length){
+    const q = $('searchInp').value.trim();
+    el.innerHTML = q ? `
+      <div class="not-found-box">
+        <div class="not-found-title">Patient Not Found in MEDITECH</div>
+        <div class="not-found-sub">No existing account matches "<strong>${q}</strong>".<br/>Patient may not be registered yet.<br/>Collect their information to create a pending appointment.</div>
+        <button class="btn-pending" id="createPendingBtn">+ Create Pending Appointment</button>
+      </div>` :
+      '<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px;">No patients found</div>';
+    if(q) {
+      const pb = document.getElementById('createPendingBtn');
+      if(pb) pb.addEventListener('click', openPendingModal);
+    }
+    return;
+  }
+  el.innerHTML=f.map(p=>`
+    <div class="pc ${selPatient&&selPatient.id===p.id?'sel':''} ${p.dupe?'dupe':''}" data-pid="${p.id}">
+      <div class="pc-av" style="background:${p.color}22;color:${p.color}">${p.initials}</div>
+      <div class="pc-info">
+        <div class="pc-name">${p.name}${p.dupe?' <span style="color:var(--danger);font-size:9px;">⚠</span>':''}</div>
+        <div class="pc-meta">MRN: ${p.mrn} &nbsp;·&nbsp; HA#: ${p.ha||'—'}</div>
+        ${p.status==='verified'?'<div class="pc-ver"><span class="pcdot"></span>MEDITECH verified</div>':''}
+      </div>
+      <div class="pcs ${p.status==='verified'?'sv':p.status==='pending'?'sp':'sn'}">${p.status.toUpperCase()}</div>
+    </div>`).join('');
+}
+
+// ── SELECT PATIENT ─────────────────────────────────────────────
+function selectPatient(id){
+  selPatient=PATIENTS.find(p=>p.id===id);
+  if(!selPatient) return;
+  dupeOK=false;
+  renderPatientList(PATIENTS);
+  const histRows=selPatient.history.length
+    ? selPatient.history.map(h=>`<div class="hist-row"><div class="hist-date">${h.date}</div><div class="hist-proc">${h.proc}</div><div class="hist-st ${h.st==='completed'?'hc':'hx'}">${h.st.toUpperCase()}</div></div>`).join('')
+    : '<div style="font-size:11px;color:var(--muted);padding:4px 0;">No prior pre-testing visits on record</div>';
+  $('patBanner').className='';
+
+  // Status tag and warning based on MEDITECH verification
+  let statusTag = '';
+  let statusWarning = '';
+  if(selPatient.status === 'verified'){
+    statusTag = `<div class="pb-tag">🔗 LINKED TO MEDITECH</div>`;
+  } else if(selPatient.status === 'pending'){
+    statusTag = `<div class="pb-tag" style="background:rgba(255,179,71,0.12);border-color:rgba(255,179,71,0.4);color:var(--warn);">⚠️ PENDING VERIFICATION</div>`;
+    const reason = selPatient.pendingReason || 'Account verification incomplete — please follow up with registration before confirming this appointment.';
+    statusWarning = `<div style="background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.3);border-radius:7px;padding:9px 12px;margin-bottom:10px;font-size:11px;color:var(--warn);line-height:1.6;">
+      <strong>⚠️ Account Pending Verification</strong><br/>${reason}<br/>
+      <span style="color:var(--muted);font-size:10px;">You may schedule this appointment — flag for registration review before the visit.</span>
+    </div>`;
+  } else if(selPatient.status === 'new'){
+    statusTag = `<div class="pb-tag" style="background:rgba(255,107,107,0.12);border-color:rgba(255,107,107,0.4);color:var(--danger);">🚫 NOT IN MEDITECH</div>`;
+    statusWarning = `<div style="background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.3);border-radius:7px;padding:9px 12px;margin-bottom:10px;font-size:11px;color:var(--danger);line-height:1.5;">
+      <strong>🚫 Patient Not Registered in MEDITECH</strong><br/>
+      This patient does not have a verified MEDITECH account. They must be registered through Parallon before an appointment can be pushed.
+      Use <strong>Create Pending Appointment</strong> instead to hold this appointment until registration is complete.
+    </div>`;
+  }
+
+  $('patBanner').innerHTML=`
+    <div class="pat-banner" style="${selPatient.status==='new'?'border-color:rgba(255,107,107,0.3);background:rgba(255,107,107,0.04);':selPatient.status==='pending'?'border-color:rgba(255,179,71,0.3);background:rgba(255,179,71,0.04);':''}">
+      <div class="pb-av" style="background:${selPatient.color}22;color:${selPatient.color}">${selPatient.initials}</div>
+      <div class="pb-info">
+        <div class="pb-name">${selPatient.name}</div>
+        <div class="pb-meta">MRN: ${selPatient.mrn} &nbsp;·&nbsp; HA#: ${selPatient.ha||'—'} &nbsp;·&nbsp; DOB: ${fmtDOB(selPatient.dob)} &nbsp;·&nbsp; ${selPatient.ins}</div>
+      </div>
+      ${statusTag}
+    </div>
+    ${statusWarning}
+    <div class="hist-box">
+      <div class="hist-title">Pre-Testing Visit History</div>
+      ${histRows}
+    </div>`;
+  $('insurance').value=selPatient.ins;
+}
+
+// ── PATIENT DIRECTORY ──────────────────────────────────────────
+function renderPatientDirectory(){
+  $('patGrid').innerHTML=PATIENTS.map(p=>`
+    <div class="pcf" data-pid="${p.id}">
+      <div class="pcf-top">
+        <div class="pcf-av" style="background:${p.color}22;color:${p.color}">${p.initials}</div>
+        <div><div class="pcf-name">${p.name}</div><div class="pcf-mrn">${p.mrn}</div></div>
+        <div class="pcs ${p.status==='verified'?'sv':p.status==='pending'?'sp':'sn'}">${p.status.toUpperCase()}</div>
+      </div>
+      <div class="pcf-row"><div class="pcf-k">DOB</div><div class="pcf-v">${fmtDOB(p.dob)}</div></div>
+      <div class="pcf-row"><div class="pcf-k">Insurance</div><div class="pcf-v">${p.ins}</div></div>
+      <div class="pcf-row"><div class="pcf-k">Phone</div><div class="pcf-v">${p.phone}</div></div>
+      <div class="pcf-row"><div class="pcf-k">Pre-Testing Visits</div><div class="pcf-v">${p.history.length}</div></div>
+      <div class="pcf-row"><div class="pcf-k">Dupe Risk</div><div class="pcf-v" style="color:${p.dupe?'var(--warn)':'var(--teal)'}">${p.dupe?'⚠ Flagged':'✓ Clear'}</div></div>
+      <div class="pcf-cta">Click to schedule pre-testing appointment →</div>
+    </div>`).join('');
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────
+function renderCalendar(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  $('calMo').textContent=months[curMonth.getMonth()]+' '+curMonth.getFullYear();
+  const first=new Date(curMonth.getFullYear(),curMonth.getMonth(),1).getDay();
+  const dim=new Date(curMonth.getFullYear(),curMonth.getMonth()+1,0).getDate();
+  const dimp=new Date(curMonth.getFullYear(),curMonth.getMonth(),0).getDate();
+  const today=new Date();
+  const hdrs=['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="cal-dh">${d}</div>`).join('');
+  let cells='';
+  for(let i=0;i<first;i++) cells+=`<div class="cal-d dim">${dimp-first+i+1}</div>`;
+  for(let d=1;d<=dim;d++){
+    const iT=today.getDate()===d&&today.getMonth()===curMonth.getMonth()&&today.getFullYear()===curMonth.getFullYear();
+    cells+=`<div class="cal-d ${iT?'today':''} ${selDay===d?'sel':''} ${apptDays.includes(d)?'has':''}" data-day="${d}">${d}</div>`;
+  }
+  for(let d=1;d<=42-first-dim;d++) cells+=`<div class="cal-d dim">${d}</div>`;
+  $('calGrid').innerHTML=hdrs+cells;
+  $('calGrid').querySelectorAll('[data-day]').forEach(el=>{
+    el.addEventListener('click',function(){
+      selDay=parseInt(this.getAttribute('data-day'));
+      const months2=['January','February','March','April','May','June','July','August','September','October','November','December'];
+      $('dcTitle').textContent=months2[curMonth.getMonth()]+' '+selDay+' — Schedule';
+      // Build date key for clicked day
+      const clickedKey=`${curMonth.getFullYear()}-${String(curMonth.getMonth()+1).padStart(2,'0')}-${String(selDay).padStart(2,'0')}`;
+      switchToDate(clickedKey);
+      renderCalendar();
+    });
+  });
+}
+
+// ── SCHEDULE ──────────────────────────────────────────────────
+function renderSchedule(){
+  $('daySlots').innerHTML=schedule.map(s=>{
+    if(s.status==='open') return `<div class="ts"><div class="ts-t">${s.time}</div><div class="sb open">Open slot</div></div>`;
+    if(s.status==='closed') return `<div class="ts"><div class="ts-t">${s.time}</div><div class="sb closed" style="font-size:10px;text-align:center;">🔒 Clinic Closed</div></div>`;
+    if(s.status==='pending') return `<div class="ts"><div class="ts-t">${s.time}</div><div class="sb pending">
+      <div class="sb-pat">⏳ ${s.pat}</div>
+      <div class="sb-proc">Pre-Testing Appt</div>
+      <div class="sb-pending-lbl">PENDING — Awaiting MEDITECH Registration</div>
+      <div class="sb-acts">
+        <button class="match-btn" data-slot="${s.id}" data-action="match">🔗 Match &amp; Confirm</button>
+        <button class="sb-btn sb-cn" data-slot="${s.id}" data-action="cn">🚫 Cancel</button>
+      </div>
+    </div></div>`;
+    if(s.status==='cancelled') return `<div class="ts"><div class="ts-t">${s.time}</div><div class="sb cancelled"><div class="sb-pat" style="opacity:0.5;text-decoration:line-through">${s.pat}</div><div class="sb-proc" style="opacity:0.5">${s.sxType}</div><div class="sb-xl">🚫 ${s.cancelReason||'Cancelled'}</div></div></div>`;
+    if(s.status==='rescheduled') return `<div class="ts"><div class="ts-t">${s.time}</div><div class="sb rescheduled"><div class="sb-pat">${s.pat}</div><div class="sb-proc">${s.sxType}</div><div class="sb-bay">${s.bay}</div><div class="sb-rl">📅 → ${s.newTime}</div><div class="sb-acts"><button class="sb-btn sb-rs" data-slot="${s.id}" data-action="rs">📅 Reschedule</button><button class="sb-btn sb-cn" data-slot="${s.id}" data-action="cn">🚫 Cancel</button></div></div></div>`;
+    if(s.status==='arrived') return `<div class="ts"><div class="ts-t">${s.time}</div><div class="sb arrived">
+      <div class="sb-pat">✅ ${s.pat}</div>
+      <div class="sb-proc">Pre-Testing Appt</div>
+      <div class="sb-bay">${s.bay}</div>
+      <div class="sb-arrived-lbl">✅ ARRIVED · ${s.arrivedTime||''}</div>
+      <div class="sb-acts"><button class="sb-btn sb-rs" data-slot="${s.id}" data-action="rs">📅 Reschedule</button><button class="sb-btn sb-cn" data-slot="${s.id}" data-action="cn">🚫 Cancel</button></div>
+    </div></div>`;
+        // SMS status
+    let smsLabel='', smsClass='', smsActions='';
+    if(s.smsStatus==='sent'){
+      smsLabel='<div class="sms-status sms-sent">📱 Text sent — awaiting reply</div>';
+      smsClass='sms-pending';
+      smsActions=`<button class="sms-btn sms-yes" data-slot="${s.id}" data-action="sms-yes">✅ Patient: YES</button><button class="sms-btn sms-no" data-slot="${s.id}" data-action="sms-no">❌ Patient: NO</button>`;
+    } else if(s.smsStatus==='confirmed'){
+      smsLabel='<div class="sms-status sms-confirmed-lbl">✅ Patient confirmed via text</div>';
+      smsClass='sms-confirmed';
+    } else if(s.smsStatus==='declined'){
+      smsLabel='<div class="sms-status sms-declined-lbl">❌ Patient declined — follow up required</div>';
+      smsClass='sms-declined';
+    }
+    return `<div class="ts"><div class="ts-t">${s.time}</div><div class="sb booked ${smsClass}"><div class="sb-pat">${s.pat}</div><div class="sb-proc">Pre-Testing Appt</div><div class="sb-bay">${s.bay}</div>${smsLabel}<div class="sb-acts">${!s.smsStatus ? `<button class="sms-btn" style="background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.4);color:#60a5fa;" data-slot="${s.id}" data-action="sms-send">📱 Send Reminder</button>` : smsActions}<button class="arrive-btn" data-slot="${s.id}" data-action="arrive">✅ Confirm Arrival</button><button class="sb-btn sb-rs" data-slot="${s.id}" data-action="rs">📅 Reschedule</button><button class="sb-btn sb-cn" data-slot="${s.id}" data-action="cn">🚫 Cancel</button></div></div></div>`;
+  }).join('');
+  $('daySlots').querySelectorAll('[data-slot]').forEach(btn=>{
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      const id=this.getAttribute('data-slot');
+      const action=this.getAttribute('data-action');
+      if(action==='cn') openCancel(id);
+      else if(action==='match') openMatchModal(id);
+      else if(action==='arrive') confirmArrival(id);
+      else if(action==='sms-send') sendSMSReminder(id);
+      else if(action==='sms-yes') patientRepliedYes(id);
+      else if(action==='sms-no') patientRepliedNo(id);
+      else openReschedule(id);
+    });
+  });
+  updateStats();
+}
+
+// ── NOTIFS / ACTIVITY ──────────────────────────────────────────
+function renderNotifs(){
+  const el=$('notifList');
+  if(!notifList.length){el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:18px;">No new notifications</div>';return;}
+  el.innerHTML=notifList.map(n=>`<div class="ni ${n.type}"><div style="font-size:16px;flex-shrink:0">${n.icon}</div><div><div class="ni-msg">${n.msg}</div><div class="ni-time">${n.time}</div></div></div>`).join('');
+}
+
+function renderActLog(){
+  const el=$('actList');
+  if(!actLog.length){el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:11px;padding:14px;">No activity yet</div>';return;}
+  el.innerHTML=actLog.map(a=>`<div class="ai"><div class="ai-t">${a.time}</div><div class="ai-txt">${a.txt}</div></div>`).join('');
+}
+
+// ── CANCEL / RESCHEDULE ────────────────────────────────────────
+function openCancel(id){
+  activeSlot=id;
+  const s=schedule.find(x=>x.id===id);
+  $('cancelName').textContent=`${s.pat} — ${s.sxType}`;
+  $('cancelMeta').textContent=`Time: ${s.time} · ${s.bay}`;
+  $('cancelReason').value='';
+  $('cancelOverlay').classList.remove('hide');
+}
+
+function confirmCancel(){
+  const reason=$('cancelReason').value;
+  if(!reason){showToast('Please select a cancellation reason','err');return;}
+  const s=schedule.find(x=>x.id===activeSlot);
+  s.status='cancelled'; s.cancelReason=reason;
+  $('cancelOverlay').classList.add('hide');
+  renderSchedule();
+  addLog(`Cancelled: ${s.pat} · ${s.sxType} · ${reason}`);
+  showToast('🚫 Appointment cancelled and updated in MEDITECH','cancelled');
+}
+
+function openReschedule(id){
+  activeSlot=id;
+  const s=schedule.find(x=>x.id===id);
+  $('rsName').textContent=`${s.pat} — ${s.sxType}`;
+  $('rsMeta').textContent=`Current: ${s.time} · ${s.bay}`;
+  const t=new Date();
+  $('rsDate').value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  $('rsTime').value=s.time;
+  $('rsReason').value='';
+  $('rsOverlay').classList.remove('hide');
+}
+
+function confirmReschedule(){
+  const nd=$('rsDate').value, nt=$('rsTime').value, reason=$('rsReason').value;
+  if(!nd||!nt){showToast('Please select a new date and time','err');return;}
+  if(!reason){showToast('Please select a reason','err');return;}
+
+  // Block if slot is already taken on the TARGET date
+  const ntNorm = normalizeTime(nt);
+  const targetDateKey2 = nd || currentDateKey;
+  const targetSched2 = scheduleDB[targetDateKey2] || [];
+  const conflict = targetSched2.find(s =>
+    s.id !== activeSlot &&
+    normalizeTime(s.time) === ntNorm &&
+    (s.status === 'active' || s.status === 'arrived' || s.status === 'rescheduled')
+  );
+  if(conflict){
+    showToast(`🚫 ${conflict.pat} is already scheduled at ${nt} — choose a different time`,'cancelled');
+    return;
+  }
+
+  const s = schedule.find(x => x.id === activeSlot);
+  const oldTime = s.time;
+  const patName = s.pat;
+  const bay = s.bay;
+  const sxType = s.sxType;
+
+  // Free old slot
+  s.status='open'; s.pat=''; s.sxType=''; s.bay=''; s.newTime='';
+
+  // Determine target date for new slot
+  const targetDateKey = nd || currentDateKey;
+  if(!scheduleDB[targetDateKey]) scheduleDB[targetDateKey]=makeEmptySlots(targetDateKey);
+
+  // Move patient to new slot
+  const newSlot = scheduleDB[targetDateKey].find(x => normalizeTime(x.time) === ntNorm && x.status==='open');
+  if(newSlot){
+    newSlot.status='active'; newSlot.pat=patName; newSlot.sxType=sxType; newSlot.bay=bay;
+  } else {
+    scheduleDB[targetDateKey].push({id:'r'+Date.now(),time:ntNorm,pat:patName,sxType,bay,status:'active'});
+    scheduleDB[targetDateKey].sort((a,b)=>normalizeTime(a.time).localeCompare(normalizeTime(b.time)));
+  }
+
+  // Add calendar dot for new date
+  const newD=parseInt(targetDateKey.split('-')[2]);
+  if(!apptDays.includes(newD)) apptDays.push(newD);
+
+  $('rsOverlay').classList.add('hide');
+  // Switch to the target date to show the moved appointment
+  switchToDate(targetDateKey);
+  renderCalendar();
+  addLog(`Rescheduled: ${patName} · ${currentDateKey} ${oldTime} → ${targetDateKey} ${ntNorm} · ${reason}`);
+  showToast(`📅 ${patName} moved to ${targetDateKey} at ${ntNorm} — MEDITECH updated`,'rescheduled');
+}
+
+// ── NEW APPOINTMENT ────────────────────────────────────────────
+function validateForm(){
+  let ok=true;
+  [['fApptDate','apptDate'],['fIns','insurance']].forEach(([fid,inp])=>{
+    const val=$(inp).value;
+    const el=$(fid);
+    if(el){
+      if(!val){el.classList.add('err');ok=false;}
+      else el.classList.remove('err');
+    }
+  });
+  return ok;
+}
+
+function initiateSubmit(){
+  if(!selPatient){showToast('Please select a patient first','err');return;}
+  if(selPatient.status==='new'){
+    showToast('🚫 Patient not in MEDITECH — use Create Pending Appointment instead','err');
+    return;
+  }
+  if(!validateForm()) return;
+  if(selPatient.dupe&&!dupeOK){showDupeModal();}
+  else{showConfirmModal();}
+}
+
+function showDupeModal(){
+  $('dn1').textContent=selPatient.name+' (Scheduler Account)';
+  $('dm1').textContent=`MRN: SCH-TMP-${Math.floor(Math.random()*9000)+1000} · Auto-generated — not linked to chart`;
+  $('dn2').textContent=selPatient.name+' (Primary Account)';
+  $('dm2').textContent=`MRN: ${selPatient.mrn} · DOB: ${fmtDOB(selPatient.dob)} · ${selPatient.ins} · Verified`;
+  $('dupeOverlay').classList.remove('hide');
+}
+
+function showConfirmModal(){
+  $('confMRN').textContent=selPatient.mrn;
+  const rows=[
+    ['Patient',    selPatient.name],
+    ['MRN',        selPatient.mrn],
+    ['HA Number',  selPatient.ha||'—'],
+    ['DOB',        fmtDOB(selPatient.dob)],
+    ['Insurance',  $('insurance').value],
+    ['Appt Date',  $('apptDate').value],
+    ['Appt Time',  $('apptTime').value],
+    ['Bay',        $('bay').value||'TBD'],
+    ['Auth Status',$('authStatus').value||'—'],
+    ['Notes',      $('notes').value||'—'],
+  ];
+  $('confSum').innerHTML=rows.map(([k,v])=>`<div class="conf-row"><div class="conf-k">${k}</div><div class="conf-v">${v}</div></div>`).join('');
+  $('confOverlay').classList.remove('hide');
+}
+
+function finalPush(){
+  const btn=$('confPushBtn');
+  btn.innerHTML='<span class="spin"></span> Pushing…';
+  btn.classList.add('btn-loading');
+  setTimeout(()=>{
+    $('confOverlay').classList.add('hide');
+    const time=normalizeTime($('apptTime').value||'08:00');
+    const bay=$('bay').value||'TBD';
+    const apptDateVal=$('apptDate').value||currentDateKey;
+    const shortName=selPatient.name.split(' ').slice(0,2).map((w,i)=>i===0?w[0]+'.':w).join(' ');
+    // Make sure target date exists in DB
+    if(!scheduleDB[apptDateVal]) scheduleDB[apptDateVal]=makeEmptySlots(apptDateVal);
+    // Try to fill existing open slot at that time
+    const targetSlot = scheduleDB[apptDateVal].find(s=>normalizeTime(s.time)===time&&s.status==='open');
+    if(targetSlot){
+      targetSlot.pat=shortName; targetSlot.sxType='Pre-Testing'; targetSlot.bay=bay; targetSlot.status='active';
+    } else {
+      // Create new slot
+      scheduleDB[apptDateVal].push({id:'n'+Date.now(),time,pat:shortName,sxType:'Pre-Testing',bay,status:'active'});
+      scheduleDB[apptDateVal].sort((a,b)=>normalizeTime(a.time).localeCompare(normalizeTime(b.time)));
+    }
+    // Switch to that date so scheduler sees the new appointment
+    switchToDate(apptDateVal);
+    // Add dot to calendar
+    const d=parseInt(apptDateVal.split('-')[2]);
+    if(!apptDays.includes(d)) apptDays.push(d);
+    renderCalendar();
+    btn.innerHTML='✅ Confirm &amp; Push to MEDITECH';
+    btn.classList.remove('btn-loading');
+    addLog(`Scheduled: ${selPatient.name} · Pre-Testing Appt · ${time} · ${bay}`);
+    showToast('✅ Pre-testing appointment pushed to MEDITECH — no duplicate created','success');
+    // Auto-send SMS reminder
+    setTimeout(()=>{
+      const newSlotId = scheduleDB[apptDateVal] ?
+        scheduleDB[apptDateVal].find(x=>normalizeTime(x.time)===normalizeTime(time)&&x.pat===shortName)?.id : null;
+      if(newSlotId) sendSMSReminder(newSlotId);
+    }, 1800);
+    // Show print confirmation
+    showPrintConfirmation(
+      { name: selPatient.name, mrn: selPatient.mrn, ha: selPatient.ha||'—', dob: fmtDOB(selPatient.dob), ins: selPatient.ins },
+      { insurance: $('insurance').value, date: $('apptDate').value, time, bay, auth: $('authStatus').value, notes: $('notes').value }
+    );
+    setTimeout(clearForm, 800);
+  },1400);
+}
+
+// ── CONFIRM ARRIVAL ───────────────────────────────────────────
+function confirmArrival(id){
+  const s=schedule.find(x=>x.id===id);
+  const time=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  s.status='arrived'; s.arrivedTime=time;
+  renderSchedule();
+  addLog(`Arrival confirmed: ${s.pat} · ${s.bay} · ${time}`);
+  showToast(`✅ ${s.pat} arrival confirmed at ${time}`,'success');
+}
+
+// ── PRINT CONFIRMATION ─────────────────────────────────────────
+function showPrintConfirmation(patientData, apptData){
+  document.getElementById('prPatName').textContent = patientData.name;
+  document.getElementById('prMRN').textContent = patientData.mrn;
+  document.getElementById('prHA').textContent = patientData.ha || '—';
+  document.getElementById('prDOB').textContent = patientData.dob;
+  document.getElementById('prIns').textContent = apptData.insurance;
+  document.getElementById('prDate').textContent = apptData.date;
+  document.getElementById('prTime').textContent = apptData.time;
+  document.getElementById('prBay').textContent = apptData.bay || 'TBD';
+  document.getElementById('prAuth').textContent = apptData.auth || '—';
+  document.getElementById('prNotes').textContent = apptData.notes || '—';
+  document.getElementById('prConfNum').textContent = 'PS-' + Date.now().toString().slice(-8);
+  document.getElementById('prBookedBy').textContent = currentUser ? currentUser.name : 'Scheduler';
+  document.getElementById('prTimestamp').textContent = new Date().toLocaleString('en-US');
+  document.getElementById('printOverlay').classList.remove('hide');
+}
+
+// ── SMS / TEXT REMINDER ───────────────────────────────────────
+function sendSMSReminder(id){
+  const s = schedule.find(x=>x.id===id);
+  if(!s) return;
+  // Find patient phone from PATIENTS array
+  const pat = PATIENTS.find(p=>{
+    const short = p.name.split(' ').slice(0,2).map((w,i)=>i===0?w[0]+'.':w).join(' ');
+    return short === s.pat || p.name.includes(s.pat.replace('.',''));
+  });
+  const phone = pat ? pat.phone : '(956) 555-XXXX';
+  const apptDate = currentDateKey;
+  const apptTime = s.time;
+
+  // Build SMS message
+  const msg = `Hi ${s.pat.replace('.','').trim()}, this is a reminder from Rio Grande Regional Hospital Pre-Testing Clinic. Your pre-testing appointment is scheduled for ${apptDate} at ${apptTime}. Please reply YES to confirm or NO to cancel. Questions? Call (956) 632-6000.`;
+
+  // Show SMS preview modal
+  $('smsPhone').textContent = phone;
+  $('smsBubble').textContent = msg;
+  $('smsOverlay').classList.remove('hide');
+
+  // Mark slot as SMS sent
+  s.smsStatus = 'sent';
+  renderSchedule();
+  addLog(`SMS reminder sent: ${s.pat} · ${apptDate} at ${apptTime} · ${phone}`);
+  showToast('📱 Text reminder sent to patient','success');
+}
+
+function patientRepliedYes(id){
+  const s = schedule.find(x=>x.id===id);
+  if(!s) return;
+  s.smsStatus = 'confirmed';
+  renderSchedule();
+  // Add notification
+  notifList.unshift({
+    type:'teal',
+    icon:'✅',
+    msg:`${s.pat} confirmed their pre-testing appointment at ${s.time} via text message.`,
+    time: new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})
+  });
+  $('nbadge').textContent = notifList.length;
+  renderNotifs();
+  addLog(`Patient confirmed via SMS: ${s.pat} · ${s.time}`);
+  showToast(`✅ ${s.pat} confirmed their appointment via text`,'success');
+}
+
+function patientRepliedNo(id){
+  const s = schedule.find(x=>x.id===id);
+  if(!s) return;
+  s.smsStatus = 'declined';
+  renderSchedule();
+  // Add urgent notification
+  notifList.unshift({
+    type:'danger',
+    icon:'❌',
+    msg:`${s.pat} DECLINED their pre-testing appointment at ${s.time} via text. Follow up required.`,
+    time: new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})
+  });
+  $('nbadge').textContent = notifList.length;
+  renderNotifs();
+  addLog(`Patient declined via SMS: ${s.pat} · ${s.time} — follow up needed`);
+  showToast(`❌ ${s.pat} declined — follow up required`,'cancelled');
+}
+
+// ── PENDING APPOINTMENT ───────────────────────────────────────
+let activePendingSlot = null;
+
+function openPendingModal(){
+  // Pre-fill name from search
+  const q = $('searchInp').value.trim();
+  if(q) {
+    const parts = q.split(' ');
+    $('pmFirst').value = parts[0]||'';
+    $('pmLast').value = parts.slice(1).join(' ')||'';
+  } else {
+    $('pmFirst').value=''; $('pmLast').value='';
+  }
+  $('pmDOB').value=''; $('pmPhone').value=''; $('pmIns').value='';
+  $('pmNotes').value='';
+  const t=new Date();
+  $('pmDate').value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  $('pmTime').value='08:00'; $('pmBay').value='';
+  $('pendingOverlay').classList.remove('hide');
+}
+
+function savePendingAppointment(){
+  const first=$('pmFirst').value.trim();
+  const last=$('pmLast').value.trim();
+  const dob=$('pmDOB').value;
+  const phone=$('pmPhone').value.trim();
+  const date=$('pmDate').value;
+  const time=$('pmTime').value;
+  if(!first||!last){showToast('Please enter patient first and last name','err');return;}
+  if(!dob){showToast('Please enter date of birth','err');return;}
+  if(!date){showToast('Please select a preferred appointment date','err');return;}
+  const fullName=`${first} ${last}`;
+  const shortName=`${first[0]}. ${last}`;
+  const bay=$('pmBay').value||'TBD';
+  const ins=$('pmIns').value||'Unknown';
+  const notes=$('pmNotes').value||'';
+  const newId='p'+Date.now();
+  schedule.push({
+    id:newId, time, pat:shortName, fullName, dob, phone, ins, notes,
+    sxType:'Pre-Testing', bay, status:'pending'
+  });
+  schedule.sort((a,b)=>a.time.localeCompare(b.time));
+  // Add notification
+  notifList.unshift({type:'purple',icon:'⏳',msg:`Pending appointment created — ${fullName} · Awaiting MEDITECH registration`,time:new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})});
+  $('nbadge').textContent=notifList.length;
+  renderNotifs();
+  $('pendingOverlay').classList.add('hide');
+  renderSchedule();
+  const d=parseInt(date.split('-')[2]);
+  if(!apptDays.includes(d)) apptDays.push(d);
+  renderCalendar();
+  $('searchInp').value='';
+  renderPatientList(PATIENTS);
+  addLog(`Pending appt created: ${fullName} · DOB: ${dob} · ${time} · ${bay}`);
+  showToast('⏳ Pending appointment saved — notify Parallon to register patient','rescheduled');
+}
+
+function openMatchModal(slotId){
+  activePendingSlot=slotId;
+  const s=schedule.find(x=>x.id===slotId);
+  $('matchPendingName').textContent=s.fullName||s.pat;
+  $('matchPendingMeta').textContent=`DOB: ${s.dob||'—'} · Phone: ${s.phone||'—'} · Insurance: ${s.ins||'—'} · Appt: ${s.time} · ${s.bay}`;
+  // Simulate finding the MEDITECH match — in production this would be a live lookup
+  $('matchVerifiedName').textContent=(s.fullName||s.pat)+' (Newly Registered)';
+  $('matchVerifiedMeta').textContent=`MRN: RGR-0${Math.floor(Math.random()*90000)+10000} · DOB: ${s.dob||'—'} · ${s.ins||'—'} · Verified by Parallon`;
+  $('matchOverlay').classList.remove('hide');
+}
+
+function confirmMatch(){
+  const s=schedule.find(x=>x.id===activePendingSlot);
+  s.status='active';
+  $('matchOverlay').classList.add('hide');
+  renderSchedule();
+  addLog(`Matched & confirmed: ${s.fullName||s.pat} · Linked to MEDITECH · ${s.time} · ${s.bay}`);
+  showToast('✅ Appointment matched and pushed to MEDITECH — no duplicate created','success');
+}
+
+function clearForm(){
+  selPatient=null; dupeOK=false;
+  $('patBanner').className='no-pat';
+  $('patBanner').innerHTML='← Select a patient from the list to begin scheduling';
+  ['apptTime','bay','apptStatus','insurance','policyId','authNum','authStatus','notes'].forEach(id=>{
+    const el=$(id); if(el) el.value=el.tagName==='SELECT'?'':'';
+  });
+  ['fApptDate','fIns'].forEach(id=>{ const el=$(id); if(el) el.classList.remove('err'); });
+  $('apptTime').value='08:00';
+  setApptDate();
+  renderPatientList(PATIENTS);
+}
+</script>
+</body>
+</html>
